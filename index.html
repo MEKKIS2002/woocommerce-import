@@ -1,497 +1,512 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WooCommerce Produktimport</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WooCommerce CSV Import Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #fafaf9;
-    --surface: #ffffff;
-    --surface2: #f4f4f2;
-    --border: rgba(0,0,0,0.1);
-    --border2: rgba(0,0,0,0.18);
-    --text: #1a1a18;
-    --text2: #6b6b67;
-    --text3: #9b9b96;
-    --accent: #1a6b4a;
-    --accent-bg: #eaf5ee;
-    --accent-border: rgba(26,107,74,0.25);
-    --danger: #c0392b;
-    --danger-bg: #fdf0ee;
-    --info-bg: #f0f4ff;
-    --info-border: rgba(59,90,200,0.2);
+    --bg: #0e0e11;
+    --surface: #17171c;
+    --surface2: #1f1f27;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0eeea;
+    --muted: #888;
+    --accent: #4ade80;
+    --accent-dim: rgba(74,222,128,0.12);
+    --accent-dim2: rgba(74,222,128,0.22);
+    --warn: #facc15;
+    --warn-dim: rgba(250,204,21,0.12);
+    --info: #60a5fa;
+    --info-dim: rgba(96,165,250,0.12);
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'DM Mono', monospace;
     --radius: 10px;
-    --radius-sm: 6px;
-    --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-    --sans: 'Inter', system-ui, -apple-system, sans-serif;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #141413;
-      --surface: #1e1e1c;
-      --surface2: #272725;
-      --border: rgba(255,255,255,0.09);
-      --border2: rgba(255,255,255,0.16);
-      --text: #f0f0ec;
-      --text2: #9b9b96;
-      --text3: #6b6b67;
-      --accent: #4caf7d;
-      --accent-bg: #0d2b1e;
-      --accent-border: rgba(76,175,125,0.25);
-      --danger-bg: #2b1210;
-      --info-bg: #111828;
-      --info-border: rgba(100,130,255,0.2);
-    }
+    --radius-lg: 16px;
   }
 
   body {
-    font-family: var(--sans);
     background: var(--bg);
     color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 24px 16px 48px;
   }
 
-  /* ── API KEY SCREEN ── */
-  #api-screen {
-    width: 100%;
-    max-width: 480px;
-    margin: auto;
-    padding: 40px 0;
-  }
-
-  .logo { text-align: center; margin-bottom: 32px; }
-  .logo-icon {
-    width: 52px; height: 52px;
-    background: var(--accent-bg);
-    border: 1px solid var(--accent-border);
-    border-radius: 14px;
-    display: inline-flex; align-items: center; justify-content: center;
-    margin-bottom: 14px;
-  }
-  .logo-icon svg { width: 26px; height: 26px; }
-  .logo h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
-  .logo p { font-size: 14px; color: var(--text2); margin-top: 4px; }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-  }
-
-  .card label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
-  .card input[type="password"], .card input[type="text"] {
-    width: 100%;
-    padding: 10px 12px;
-    font-size: 14px;
-    font-family: var(--mono);
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .card input:focus { border-color: var(--accent); }
-
-  .hint { font-size: 12px; color: var(--text3); margin-top: 6px; }
-  .hint a { color: var(--accent); text-decoration: none; }
-
-  .btn-primary {
-    width: 100%;
-    margin-top: 18px;
-    padding: 11px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .btn-primary:hover { opacity: 0.88; }
-  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
-
-  .security-note {
-    margin-top: 16px;
-    padding: 12px 14px;
-    background: var(--info-bg);
-    border: 1px solid var(--info-border);
-    border-radius: var(--radius-sm);
-    font-size: 12px;
-    color: var(--text2);
-    line-height: 1.6;
-  }
-
-  .error-msg {
-    margin-top: 12px;
-    padding: 10px 12px;
-    background: var(--danger-bg);
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    color: var(--danger);
-    display: none;
-  }
-
-  /* ── MAIN APP ── */
-  #main-app {
-    width: 100%;
-    max-width: 860px;
-    display: none;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .app-header {
+  /* ── Header ── */
+  header {
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 0 16px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 16px;
-  }
-  .app-header-left { display: flex; align-items: center; gap: 12px; }
-  .app-header-icon {
-    width: 36px; height: 36px;
-    background: var(--accent-bg);
-    border: 1px solid var(--accent-border);
-    border-radius: 9px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .app-header-icon svg { width: 18px; height: 18px; }
-  .app-title { font-size: 16px; font-weight: 600; }
-  .app-subtitle { font-size: 12px; color: var(--text3); }
-
-  .header-actions { display: flex; gap: 8px; align-items: center; }
-  .btn-ghost {
-    padding: 6px 12px;
-    font-size: 12px;
-    background: none;
-    border: 1px solid var(--border2);
-    border-radius: var(--radius-sm);
-    color: var(--text2);
-    cursor: pointer;
-    font-family: var(--sans);
-  }
-  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
-
-  /* ── CHAT ── */
-  #chat-window {
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-badge {
+    background: var(--accent);
+    color: #0e0e11;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 99px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .header-hint {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  /* ── Layout ── */
+  .layout {
+    display: flex;
+    flex: 1;
     overflow: hidden;
+    height: calc(100vh - 62px);
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    height: 520px;
+    padding: 1.25rem 0;
+  }
+  .sidebar-section {
+    padding: 0 1rem 1rem;
+  }
+  .sidebar-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-bottom: 0.5rem;
+    padding: 0 0.25rem;
+  }
+  .cmd-list { display: flex; flex-direction: column; gap: 2px; }
+  .cmd-btn {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cmd-btn:hover { background: var(--surface2); }
+  .cmd-btn .cmd-tag {
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .cmd-btn .cmd-desc {
+    color: var(--muted);
+    font-size: 11px;
   }
 
-  #messages {
+  .sidebar-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0.75rem 1rem;
+  }
+
+  .file-drop-zone {
+    margin: 0 1rem;
+    border: 1.5px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .file-drop-zone:hover, .file-drop-zone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .file-drop-zone input { display: none; }
+  .file-drop-zone p { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .file-drop-icon { font-size: 20px; }
+  .file-status {
+    margin: 0.5rem 1rem 0;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--accent);
+    word-break: break-all;
+  }
+
+  /* ── Main chat area ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .messages {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 1.5rem 2rem;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    scroll-behavior: smooth;
+    gap: 1.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
   }
-  #messages::-webkit-scrollbar { width: 4px; }
-  #messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 
-  .msg { display: flex; gap: 10px; max-width: 100%; }
-  .msg.user { flex-direction: row-reverse; }
+  /* ── Message bubbles ── */
+  .msg { display: flex; gap: 12px; max-width: 820px; }
+  .msg.user { flex-direction: row-reverse; align-self: flex-end; }
+  .msg.assistant { align-self: flex-start; }
 
-  .msg-avatar {
-    width: 28px; height: 28px; border-radius: 50%;
+  .avatar {
+    width: 32px; height: 32px; min-width: 32px;
+    border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 600;
-    flex-shrink: 0; margin-top: 2px;
+    font-size: 12px; font-weight: 600;
+    font-family: var(--font-display);
   }
-  .msg.bot .msg-avatar { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
-  .msg.user .msg-avatar { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+  .avatar.ai { background: var(--accent-dim2); color: var(--accent); border: 1px solid var(--accent); }
+  .avatar.user-av { background: var(--info-dim); color: var(--info); border: 1px solid var(--info); }
 
-  .msg-body {
-    max-width: calc(100% - 44px);
+  .bubble {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 0.9rem 1.1rem;
     font-size: 14px;
     line-height: 1.65;
-    color: var(--text);
+    max-width: 680px;
   }
-  .msg.user .msg-body {
-    background: var(--info-bg);
-    border: 1px solid var(--info-border);
-    border-radius: var(--radius-sm);
-    padding: 9px 13px;
+  .msg.user .bubble {
+    background: var(--info-dim);
+    border-color: rgba(96,165,250,0.25);
   }
-
-  .msg-body code {
-    font-family: var(--mono);
+  .bubble code {
+    font-family: var(--font-mono);
     font-size: 12px;
-    background: var(--surface2);
+    background: rgba(255,255,255,0.07);
     padding: 1px 5px;
     border-radius: 4px;
-    border: 1px solid var(--border);
   }
-
-  .msg-body pre {
-    margin-top: 10px;
-    background: var(--surface2);
+  .bubble pre {
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
     overflow-x: auto;
-    font-family: var(--mono);
+    font-family: var(--font-mono);
     font-size: 11.5px;
-    line-height: 1.55;
-    white-space: pre;
+    margin: 0.6rem 0;
+    scrollbar-width: thin;
   }
-  .msg-body pre::-webkit-scrollbar { height: 4px; }
-  .msg-body pre::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
-
-  .msg-body strong { font-weight: 600; }
-  .msg-body em { font-style: italic; color: var(--text2); }
-
-  .warning-banner {
-    background: #fff8e6;
-    border: 1px solid #f0c040;
-    border-radius: var(--radius-sm);
-    padding: 8px 12px;
+  .bubble .warn-banner {
+    background: var(--warn-dim);
+    border: 1px solid rgba(250,204,21,0.3);
+    border-radius: 7px;
+    padding: 0.5rem 0.75rem;
     font-size: 13px;
-    font-weight: 600;
-    color: #7a5500;
-    margin-bottom: 8px;
+    color: var(--warn);
+    margin-bottom: 0.6rem;
+    font-weight: 500;
   }
-  @media (prefers-color-scheme: dark) {
-    .warning-banner { background: #2a2000; border-color: #7a5500; color: #f0c040; }
+  .bubble .ok-banner {
+    background: var(--accent-dim);
+    border: 1px solid rgba(74,222,128,0.3);
+    border-radius: 7px;
+    padding: 0.5rem 0.75rem;
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+    font-weight: 500;
   }
-
-  .dl-btn {
+  .bubble ul { padding-left: 1.2rem; }
+  .bubble li { margin-bottom: 3px; }
+  .download-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    margin-top: 12px;
-    padding: 8px 16px;
-    background: var(--accent-bg);
-    border: 1px solid var(--accent-border);
-    border-radius: var(--radius-sm);
+    gap: 7px;
+    margin-top: 0.75rem;
+    background: var(--accent);
+    color: #0e0e11;
+    font-family: var(--font-display);
+    font-weight: 700;
     font-size: 13px;
-    font-weight: 500;
-    color: var(--accent);
+    padding: 8px 16px;
+    border-radius: 8px;
     cursor: pointer;
-    text-decoration: none;
+    border: none;
     transition: opacity 0.15s;
+    text-decoration: none;
   }
-  .dl-btn:hover { opacity: 0.8; }
-  .dl-btn svg { width: 14px; height: 14px; }
+  .download-btn:hover { opacity: 0.88; }
 
-  .thinking-dots span {
-    display: inline-block;
-    width: 5px; height: 5px;
-    background: var(--text3);
-    border-radius: 50%;
-    margin: 0 2px;
-    animation: bounce 1.2s infinite;
-  }
-  .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
-  .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes bounce {
-    0%, 60%, 100% { transform: translateY(0); }
-    30% { transform: translateY(-5px); }
-  }
+  /* ── Typing indicator ── */
+  .typing { display: flex; align-items: center; gap: 5px; padding: 0.4rem 0; }
+  .dot { width: 6px; height: 6px; background: var(--muted); border-radius: 50%; animation: blink 1.2s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%,80%,100% { opacity: 0.3; } 40% { opacity: 1; } }
 
-  /* ── COMMANDS BAR ── */
-  .commands-bar {
-    padding: 10px 16px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    background: var(--surface2);
-  }
-  .cmd-chip {
-    padding: 4px 10px;
-    font-size: 11.5px;
-    font-family: var(--mono);
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 20px;
-    color: var(--text2);
-    cursor: pointer;
-    transition: all 0.12s;
-  }
-  .cmd-chip:hover { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
-
-  /* ── INPUT AREA ── */
+  /* ── Input area ── */
   .input-area {
-    padding: 12px 16px;
+    padding: 1rem 2rem 1.25rem;
     border-top: 1px solid var(--border);
     background: var(--surface);
+  }
+  .input-row {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: flex-end;
-  }
-
-  .input-left { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-
-  .upload-row { display: flex; align-items: center; gap: 8px; }
-  #file-input { display: none; }
-  .upload-label {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 12px; color: var(--text3);
-    padding: 4px 9px;
-    border: 1px dashed var(--border2);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all 0.12s;
-  }
-  .upload-label:hover { color: var(--text2); border-color: var(--border2); background: var(--surface2); }
-  .upload-label svg { width: 12px; height: 12px; }
-  #file-name { font-size: 11px; color: var(--text3); }
-  .clear-file { font-size: 11px; color: var(--danger); cursor: pointer; display: none; }
-
-  textarea#user-input {
-    width: 100%;
-    resize: none;
-    font-family: var(--sans);
-    font-size: 14px;
-    color: var(--text);
     background: var(--surface2);
     border: 1px solid var(--border2);
-    border-radius: var(--radius-sm);
-    padding: 9px 12px;
+    border-radius: var(--radius-lg);
+    padding: 0.6rem 0.75rem;
+    transition: border-color 0.2s;
+  }
+  .input-row:focus-within { border-color: var(--accent); }
+  #chat-input {
+    flex: 1;
+    background: none;
+    border: none;
     outline: none;
-    min-height: 42px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    resize: none;
+    min-height: 24px;
     max-height: 140px;
     line-height: 1.5;
-    transition: border-color 0.15s;
   }
-  textarea#user-input:focus { border-color: var(--accent); }
-
-  #send-btn {
-    padding: 0 18px;
-    height: 42px;
+  #chat-input::placeholder { color: var(--muted); }
+  .send-btn {
     background: var(--accent);
-    color: #fff;
     border: none;
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    font-weight: 500;
+    color: #0e0e11;
+    width: 34px; height: 34px;
+    border-radius: 8px;
     cursor: pointer;
-    font-family: var(--sans);
-    white-space: nowrap;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     transition: opacity 0.15s;
   }
-  #send-btn:hover { opacity: 0.88; }
-  #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .send-btn:hover { opacity: 0.85; }
+  .send-btn:disabled { opacity: 0.4; cursor: default; }
+  .send-btn svg { width: 16px; height: 16px; }
 
-  /* ── FOOTER ── */
-  .app-footer {
-    margin-top: 14px;
-    font-size: 11px;
-    color: var(--text3);
-    text-align: center;
+  .hint-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 0.65rem;
   }
-  .app-footer a { color: var(--text3); text-decoration: underline; }
+  .hint-pill {
+    font-size: 11.5px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .hint-pill:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── Welcome screen ── */
+  .welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 2rem;
+    gap: 1rem;
+  }
+  .welcome-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 2rem;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .welcome-title span { color: var(--accent); }
+  .welcome-sub { color: var(--muted); font-size: 14px; max-width: 420px; }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-width: 560px;
+    margin-top: 0.5rem;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.8rem;
+    font-size: 12.5px;
+    text-align: left;
+  }
+  .feature-card .fc-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 3px;
+    color: var(--accent);
+  }
+  .feature-card .fc-sub { color: var(--muted); font-size: 11.5px; }
+
+  @media (max-width: 640px) {
+    .sidebar { display: none; }
+    .layout { height: calc(100vh - 56px); }
+    .messages { padding: 1rem; }
+    .input-area { padding: 0.75rem 1rem 1rem; }
+    .feature-grid { grid-template-columns: 1fr 1fr; }
+    .welcome-title { font-size: 1.4rem; }
+  }
 </style>
 </head>
 <body>
 
-<!-- ══ API KEY SCREEN ══ -->
-<div id="api-screen">
+<header>
   <div class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent)">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-        <line x1="16" y1="13" x2="8" y2="13"/>
-        <line x1="16" y1="17" x2="8" y2="17"/>
-        <polyline points="10 9 9 9 8 9"/>
-      </svg>
-    </div>
-    <h1>WooCommerce Produktimport</h1>
-    <p>Drevet av Claude AI &mdash; skriv inn API-nøkkelen din for å starte</p>
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect width="22" height="22" rx="6" fill="#4ade80"/><path d="M5 11h12M11 5v12" stroke="#0e0e11" stroke-width="2.5" stroke-linecap="round"/></svg>
+    WooImport Agent
+    <span class="logo-badge">Claude</span>
   </div>
+  <span class="header-hint">WooCommerce CSV generator</span>
+</header>
 
-  <div class="card">
-    <label for="api-key-input">Anthropic API-nøkkel</label>
-    <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
-    <p class="hint">Hent nøkkelen din på <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a></p>
-
-    <div class="security-note">
-      🔒 Nøkkelen lagres kun i nettleserens lokale minne (<code>localStorage</code>) på din egen enhet. Den sendes aldri til andre servere enn Anthropic.
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Last opp fil</div>
+      <label class="file-drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept=".pdf,.xlsx,.xls,.csv,.txt" />
+        <div class="file-drop-icon">📁</div>
+        <p>PDF, Excel eller CSV</p>
+        <p style="font-size:11px;margin-top:4px;">Klikk eller dra og slipp</p>
+      </label>
+      <div class="file-status" id="file-status"></div>
     </div>
 
-    <div class="error-msg" id="key-error">Ugyldig API-nøkkel. Sjekk at nøkkelen er riktig og prøv igjen.</div>
+    <hr class="sidebar-divider" />
 
-    <button class="btn-primary" id="connect-btn" onclick="connectApi()">Koble til og start</button>
-  </div>
-</div>
-
-<!-- ══ MAIN APP ══ -->
-<div id="main-app">
-  <div class="app-header">
-    <div class="app-header-left">
-      <div class="app-header-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent)">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-        </svg>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Kommandoer</div>
+      <div class="cmd-list">
+        <button class="cmd-btn" onclick="insertCmd('/help')">
+          <span class="cmd-tag">/help</span>
+          <span class="cmd-desc">Vis alle kommandoer</span>
+        </button>
+        <button class="cmd-btn" onclick="insertCmd('/preview')">
+          <span class="cmd-tag">/preview</span>
+          <span class="cmd-desc">Forhåndsvisning</span>
+        </button>
+        <button class="cmd-btn" onclick="insertCmd('/validate')">
+          <span class="cmd-tag">/validate</span>
+          <span class="cmd-desc">Sjekk konsistens</span>
+        </button>
+        <button class="cmd-btn" onclick="insertCmd('/fill-prices')">
+          <span class="cmd-tag">/fill-prices</span>
+          <span class="cmd-desc">Hent priser</span>
+        </button>
+        <button class="cmd-btn" onclick="insertCmd('/fill-dimensions')">
+          <span class="cmd-tag">/fill-dimensions</span>
+          <span class="cmd-desc">Hent mål</span>
+        </button>
+        <button class="cmd-btn" onclick="insertCmd('/export')">
+          <span class="cmd-tag">/export</span>
+          <span class="cmd-desc">Generer CSV</span>
+        </button>
+        <button class="cmd-btn" onclick="insertCmd('/search-tariff ')">
+          <span class="cmd-tag">/search-tariff</span>
+          <span class="cmd-desc">Finn tolltariff</span>
+        </button>
       </div>
-      <div>
-        <div class="app-title">WooCommerce Produktimport</div>
-        <div class="app-subtitle">Produktimport-bot for WooCommerce CSV</div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="messages" id="messages">
+      <!-- Welcome -->
+      <div class="welcome" id="welcome-screen">
+        <div class="welcome-title">Konverter produktkataloger<br/> til <span>WooCommerce CSV</span></div>
+        <div class="welcome-sub">Last opp en prisliste eller produktkatalog, og agenten genererer en ferdig importklar CSV-fil tilpasset WooCommerce.</div>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="fc-title">Varianter</div>
+            <div class="fc-sub">Parent + variation håndteres automatisk</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-title">SEO-tekster</div>
+            <div class="fc-sub">Engelske og norske beskrivelser</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-title">Tariffkoder</div>
+            <div class="fc-sub">HS/EU-koder søkes opp automatisk</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-title">SKU-er</div>
+            <div class="fc-sub">Unike SKU-er genereres for alle varianter</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-title">WooCommerce</div>
+            <div class="fc-sub">Klar til import, riktig delimiter og struktur</div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-title">Norsk</div>
+            <div class="fc-sub">Agenten svarer på norsk</div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="header-actions">
-      <button class="btn-ghost" onclick="clearConversation()">Ny samtale</button>
-      <button class="btn-ghost" onclick="changeApiKey()">Bytt nøkkel</button>
-    </div>
-  </div>
-
-  <div id="chat-window">
-    <div id="messages"></div>
-
-    <div class="commands-bar">
-      <span style="font-size:11px;color:var(--text3);margin-right:4px;align-self:center;">Kommandoer:</span>
-      <button class="cmd-chip" onclick="sendCmd('/help')">/help</button>
-      <button class="cmd-chip" onclick="sendCmd('/preview')">/preview</button>
-      <button class="cmd-chip" onclick="sendCmd('/validate')">/validate</button>
-      <button class="cmd-chip" onclick="sendCmd('/fill-prices')">/fill-prices</button>
-      <button class="cmd-chip" onclick="sendCmd('/fill-dimensions')">/fill-dimensions</button>
-      <button class="cmd-chip" onclick="sendCmd('/export')">/export</button>
     </div>
 
     <div class="input-area">
-      <div class="input-left">
-        <div class="upload-row">
-          <input type="file" id="file-input" accept=".pdf,.csv,.xlsx,.xls,.txt,.json">
-          <label for="file-input" class="upload-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Last opp fil
-          </label>
-          <span id="file-name"></span>
-          <span class="clear-file" id="clear-file-btn" onclick="clearFile()">✕ Fjern</span>
-        </div>
-        <textarea id="user-input" placeholder="Lim inn produktinfo, lenke til nettside, eller skriv en kommando..." rows="1"></textarea>
+      <div class="input-row">
+        <textarea id="chat-input" placeholder="Beskriv produktene, lim inn URL, eller skriv /help for kommandoer…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </div>
-      <button id="send-btn" onclick="sendMessage()">Send ↵</button>
+      <div class="hint-pills">
+        <span class="hint-pill" onclick="setPrompt('Generer CSV fra denne produktlisten')">Generer CSV fra liste</span>
+        <span class="hint-pill" onclick="setPrompt('/preview')">Forhåndsvisning</span>
+        <span class="hint-pill" onclick="setPrompt('/export')">Eksporter CSV</span>
+        <span class="hint-pill" onclick="setPrompt('/validate')">Valider CSV</span>
+        <span class="hint-pill" onclick="setPrompt('/help')">Hjelp</span>
+      </div>
     </div>
-  </div>
-
-  <div class="app-footer">
-    Kostnad per bruk faktureres direkte til din Anthropic-konto &nbsp;·&nbsp;
-    <a href="https://www.anthropic.com/pricing" target="_blank">Se priser</a>
-  </div>
+  </main>
 </div>
 
 <script>
@@ -499,24 +514,52 @@ const SYSTEM_PROMPT = `Du skal fungere som en produktimport-bot for WooCommerce.
 Brukeren laster opp en produktliste (f.eks. i PDF, Excel, CSV) eller deler en lenke til produsentens nettside.
 Din oppgave er å trekke ut informasjonen og fylle det i en CSV-fil som følger et WooCommerce-importoppsett.
 
-CSV strukturen skal ha nøyaktig disse kolonnene (bruk semikolon ; som delimiter, la felt være blanke hvis du ikke har data):
-Id;Type;SKU;Parent;Name;Regular price;Tags;Short description for SEO;Product Description (Norsk);In stock?;Stock;Backorders allowed?;Weight (kg);Length (cm);Width (cm);Height (cm);Meta: _logistra_robots_product_freight_description;Meta: _logistra_robots_product_commodity_code;Meta: _estimated_shipping_text;Meta: _logistra_robots_product_country_of_origin;Meta: _production_type;Attribute 1 name;Attribute 1 value(s);Attribute 1 visible;Attribute 1 global;Attribute 2 name;Attribute 2 value(s);Attribute 2 visible;Attribute 2 global;Meta: _wpcom_is_markdown;Published;Is featured?;Visibility in catalog;Allow customer reviews?
+CSV filen skal alltid leveres som innhold brukeren kan kopiere eller laste ned, med mindre brukeren spør om noe annet.
 
-REGLER:
+Struktur i CSV
+Kolonner (bruk nøyaktig disse, og la felt være blanke hvis du ikke har data):
+Id, Type, SKU, Parent, Name, Regular price, Tags, Short description for SEO, Product Description (Norsk), In stock?, Stock, Backorders allowed?, Weight (kg), Length (cm), Width (cm), Height (cm), Meta: _logistra_robots_product_freight_description, Meta: _logistra_robots_product_commodity_code, Meta: _estimated_shipping_text, Meta: _logistra_robots_product_country_of_origin, Meta: _production_type, Attribute 1 name, Attribute 1 value(s), Attribute 1 visible, Attribute 1 global, Attribute 2 name, Attribute 2 value(s), Attribute 2 visible, Attribute 2 global, Meta: _wpcom_is_markdown, Published, Is featured?, Visibility in catalog, Allow customer reviews?
+
+Regler
 - Alltid bruk ; som delimiter
 - Alltid ha ID kolonne, men ALDRI FYLL UT ID
-- Aldri bruk em-dash (—)
-- Produkter med varianter lagres som variable. Type = variable for parent, type = variation for varianter.
-- Alle varianter skal ha Parent som matcher SKU til parent-produktet
-- Alle varianter skal ha samme navn som parent
-- Pris skal aldri skrives med komma (bruk punktum for desimaler)
-- Generer unike SKU-numre basert på produsentnavn + produktnavn + variant (korte, alphanumeriske)
-- Tags skilles med komma + mellomrom. Legg bare inn produsentnavn og/eller designernavn som tags. Ikke legg inn andre tagger.
-- Navn: kun produktnavnet. For enkle objekter som stol/sofa/bord med dårlig beskrivende navn, legg til produkttype (f.eks. "Ami sofa", "Pebble bord")
-- Short description for SEO: Engelsk, MELLOM 120 og 158 tegn, søkemotortilpasset. Telle tegnene nøye.
-- Product Description (Norsk): Minst ett langt avsnitt (5-8 setninger) + punktliste med mål/vekt og annen viktig info. Ikke for skrytete. Basert på hvordan andre nettbutikker beskriver produktet. Beskriv produktet godt. Ikke skriv at informasjon mangler i beskrivelsen. Kun på parent-produktet. Varianter kan ha maks 1 setning om viktige forskjeller.
-- Dimensjoner i CM, vekt i KG
-- Parent skal ha ALLE attributtverdier kommaseparert. Varianter har nøyaktig én verdi per attributt. Skill attributtverdier i parent med komma + mellomrom.
+- Aldri bruk em-dash
+
+Produktstruktur
+- Produkter med varianter lagres som variable
+- Hver variant har variation som type
+- Alle varianter har Parent som matcher SKU til variable-produktet
+- Alle varianter har samme navn som parent
+
+Pris
+- Pris skrives aldri med komma
+
+SKU
+- Generer unike SKU-numre basert på produsentnavn + produktnavn + variant
+
+Tags
+- Tags skilles alltid med komma + mellomrom
+- Unngå å legge inn tagger med mindre det er navn på produsent eller designer
+
+Navn
+- Kun produktnavn. For generiske produkter (stol, sofa, bord) legg til kategoribetegnelse
+- Eksempel: "Ami sofa"
+
+Beskrivelser
+- Short description for SEO: Engelsk, SEO-tilpasset, 120-158 karakterer (ikke mer, ikke mindre)
+- Product Description (Norsk): Norsk, minst ett langt avsnitt (5-8 setninger) + punktliste med mål og viktig info
+- Avsnittet skal ikke være kort og skal beskrive produktet godt. Ikke skriv for skrytete
+- Beskriv utifra hvordan andre nettbutikker beskriver produktet
+- Dimensjoner i CM, vekt i kilo
+- Manglende info nevnes IKKE i beskrivelsen
+- Hovedbeskrivelsen KUN i parent-produktet. Varianter maks 1 setning hvis viktige forskjeller
+
+Attributter
+- Parent-produktet har alle attributtverdier fra variantene
+- Variantene har nøyaktig én verdi per attributt
+- Skill attributtverdier i parent med komma + mellomrom
+
+Meta og lager (defaults)
 - In stock? = 1
 - Backorders allowed? = 1
 - Meta: _wpcom_is_markdown = 1
@@ -525,269 +568,250 @@ REGLER:
 - Visibility in catalog = visible
 - Allow customer reviews? = 1
 - Meta: _logistra_robots_product_country_of_origin = Norge
-- Meta: _production_type: "Storproduksjon tilgjengelig" ELLER "Produseres på bestilling" ELLER "Begrenset opplag". Hvis ukjent, bruk "Storproduksjon tilgjengelig"
-- Meta: _estimated_shipping_text: format "X - Y dager" eller "X - Y uker". EKSTREMT viktig - finn dette på nett eller fra produsentens nettside. I svaret ditt, skriv i kommentarer hvilke kilder du brukte for å finne estimert sendingstid.
-- Meta: _logistra_robots_product_freight_description: kort setning om produktet, f.eks. "Polstret stol med metallunderstell"
-- Meta: _logistra_robots_product_commodity_code: Finn riktig tolltariffkode (HS-kode) for produktet fra EU/HS-systemet
-- Hvis informasjon mangler (pris, mål, vekt), la felt stå tomt MEN skriv med stor og tydelig tekst over CSV-en hva som mangler, f.eks.: PRIS OG MÅL MANGLER - DISSE MÅ FYLLES INN MANUELT
 
-KOMMANDOER:
-/help - vis alle kommandoer med forklaringer
-/preview - vis forhåndsvisning av parent + én variant som CSV
-/validate - sjekk at alle SKU er unike, alle parents har varianter, attributter er konsistente
-/fill-prices - forsøk å hente manglende priser fra prisliste eller nettside
-/fill-dimensions - forsøk å hente mål og vekt, eller gi forslag fra lignende modeller
-/search-tariff [produktnavn] - søk opp HS-kode/tariff for et produkt
-/export - generer ferdig CSV
+Tariffkode
+- Finn riktig tolltariffkode (EU/HS-systemet)
+- Tariff description: kort setning
+- Meta: _estimated_shipping_text: f.eks. "3 - 6 dager" eller "8 - 12 uker"
+- Vis kildene du brukte for å finne estimert leveringstid
 
-Når du genererer CSV, pakk den inn i en kodeblokk som starter med \`\`\`csv og slutter med \`\`\`.
-Sørg for at parent-produktet samler alle attributter og varianter riktig for WooCommerce.
-Hold deg alltid til formatet - aldri legg til ekstra kolonner.`;
+Meta: _production_type
+- "Storproduksjon tilgjengelig", "Produseres på bestilling" eller "Begrenset opplag"
+- Hvis ukjent: "Storproduksjon tilgjengelig"
 
-let apiKey = '';
+Tilgjengelige kommandoer
+/help - viser alle kommandoer
+/preview - viser forhåndsvisning (parent + én variant) før hele CSV genereres
+/validate - dobbeltsjekker at alle SKU-er er unike, at alle parent har variasjoner, og at attributter er konsistente
+/fill-prices - forsøker å hente inn manglende priser
+/fill-dimensions - forsøker å hente inn mål og vekt automatisk
+/search-tariff [produktnavn] - søker opp HS-kode/tariff
+/export - genererer ferdig CSV
+
+Ekstra
+- Hvis informasjon mangler (pris, mål, vekt), la felt stå tomt men marker i svaret hva som må dobbeltsjekkes
+- Skriv i bold tekst øverst: f.eks. **PRIS OG MÅL MANGLER**
+- Sørg alltid for at parent-produktet samler alle attributter og variantvalg
+
+Svar alltid på norsk med mindre brukeren skriver på et annet språk.`;
+
 let conversationHistory = [];
 let uploadedFileContent = null;
+let uploadedFileName = null;
 
-// ── INIT ──
-window.addEventListener('load', () => {
-  const saved = localStorage.getItem('woo_claude_api_key');
-  if (saved) { apiKey = saved; showApp(); }
-  document.getElementById('api-key-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') connectApi();
-  });
+// ── File upload ──
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const fileStatus = document.getElementById('file-status');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
 });
 
-// ── API KEY ──
-async function connectApi() {
-  const input = document.getElementById('api-key-input').value.trim();
-  const errEl = document.getElementById('key-error');
-  const btn = document.getElementById('connect-btn');
-  errEl.style.display = 'none';
-  if (!input.startsWith('sk-ant-')) { errEl.style.display = 'block'; errEl.textContent = 'Nøkkelen ser ikke riktig ut. Den skal starte med sk-ant-'; return; }
-  btn.disabled = true; btn.textContent = 'Kobler til...';
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': input, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 10, messages: [{ role: 'user', content: 'hi' }] })
-    });
-    if (res.status === 401) { errEl.style.display = 'block'; errEl.textContent = 'Ugyldig API-nøkkel. Sjekk at du kopierte den riktig.'; btn.disabled = false; btn.textContent = 'Koble til og start'; return; }
-    apiKey = input;
-    localStorage.setItem('woo_claude_api_key', apiKey);
-    showApp();
-  } catch(e) {
-    errEl.style.display = 'block'; errEl.textContent = 'Nettverksfeil. Sjekk internettilkoblingen og prøv igjen.';
-    btn.disabled = false; btn.textContent = 'Koble til og start';
-  }
-}
-
-function showApp() {
-  document.getElementById('api-screen').style.display = 'none';
-  document.getElementById('main-app').style.display = 'flex';
-  if (conversationHistory.length === 0) addWelcomeMessage();
-}
-
-function changeApiKey() {
-  localStorage.removeItem('woo_claude_api_key');
-  apiKey = '';
-  document.getElementById('main-app').style.display = 'none';
-  document.getElementById('api-screen').style.display = 'block';
-  document.getElementById('api-key-input').value = '';
-  document.getElementById('connect-btn').disabled = false;
-  document.getElementById('connect-btn').textContent = 'Koble til og start';
-}
-
-function clearConversation() {
-  conversationHistory = [];
-  uploadedFileContent = null;
-  clearFile();
-  document.getElementById('messages').innerHTML = '';
-  addWelcomeMessage();
-}
-
-// ── FILE UPLOAD ──
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('file-input').addEventListener('change', handleFileUpload);
-  const ta = document.getElementById('user-input');
-  ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-  ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; });
-});
-
-function handleFileUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  document.getElementById('file-name').textContent = file.name;
-  document.getElementById('clear-file-btn').style.display = 'inline';
+function handleFile(file) {
+  uploadedFileName = file.name;
+  fileStatus.textContent = '✓ ' + file.name;
   const reader = new FileReader();
-  reader.onload = ev => { uploadedFileContent = { name: file.name, content: ev.target.result }; };
-  reader.onerror = () => { addBotMessage('Klarte ikke å lese filen. Prøv å kopiere innholdet og lime det inn direkte.'); };
-  if (file.name.toLowerCase().endsWith('.pdf')) {
-    addBotMessage('📄 PDF lastet opp: <strong>' + file.name + '</strong>. Tips: For best resultat, kopier teksten fra PDF-en og lim den inn i chatten. Mange PDF-filer har beskyttet tekst som ikke kan leses automatisk.');
-    uploadedFileContent = { name: file.name, content: '[PDF fil: ' + file.name + ' - Brukeren har lastet opp denne filen]' };
-    document.getElementById('file-name').textContent = file.name;
+  if (file.type === 'application/pdf') {
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      uploadedFileContent = { type: 'pdf', data: reader.result.split(',')[1], name: file.name };
+    };
   } else {
-    reader.readAsText(file, 'UTF-8');
-    addBotMessage('✅ Fil lastet opp: <strong>' + file.name + '</strong>. Send en melding for å behandle filen.');
+    reader.readAsText(file);
+    reader.onload = () => {
+      uploadedFileContent = { type: 'text', data: reader.result, name: file.name };
+    };
   }
 }
 
-function clearFile() {
-  uploadedFileContent = null;
-  document.getElementById('file-input').value = '';
-  document.getElementById('file-name').textContent = '';
-  document.getElementById('clear-file-btn').style.display = 'none';
+// ── UI helpers ──
+function insertCmd(cmd) {
+  const inp = document.getElementById('chat-input');
+  inp.value = cmd;
+  inp.focus();
+  autoResize(inp);
+}
+function setPrompt(text) {
+  const inp = document.getElementById('chat-input');
+  inp.value = text;
+  inp.focus();
+  autoResize(inp);
+}
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+}
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 }
 
-// ── MESSAGES ──
-function addWelcomeMessage() {
-  const html = `Hei! 👋 Jeg er din <strong>produktimport-bot for WooCommerce</strong>.<br><br>
-  Slik bruker du meg:<br>
-  &nbsp;&nbsp;1. Last opp en produktliste (CSV, Excel, TXT) med knappen nedenfor<br>
-  &nbsp;&nbsp;2. Eller lim inn produktinfo / en lenke til produsentens nettside<br>
-  &nbsp;&nbsp;3. Jeg genererer en ferdig WooCommerce CSV-fil klar for import<br><br>
-  Bruk <code>/help</code> for å se alle tilgjengelige kommandoer.`;
-  addBotMessage(html);
+function hideWelcome() {
+  const w = document.getElementById('welcome-screen');
+  if (w) w.remove();
 }
 
-function addBotMessage(html, csvContent = null) {
-  const msgs = document.getElementById('messages');
-  const div = document.createElement('div');
-  div.className = 'msg bot';
-  div.innerHTML = `<div class="msg-avatar">AI</div><div class="msg-body">${html}</div>`;
-  if (csvContent) {
-    const a = document.createElement('a');
-    a.className = 'dl-btn';
-    a.href = '#';
-    a.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Last ned CSV`;
-    a.onclick = (e) => { e.preventDefault(); downloadCsv(csvContent); };
-    div.querySelector('.msg-body').appendChild(a);
-  }
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-  return div;
-}
+function appendMessage(role, content, isHtml = false) {
+  hideWelcome();
+  const container = document.getElementById('messages');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'msg ' + (role === 'user' ? 'user' : 'assistant');
 
-function addUserMessage(text) {
-  const msgs = document.getElementById('messages');
-  const div = document.createElement('div');
-  div.className = 'msg user';
-  div.innerHTML = `<div class="msg-avatar">Du</div><div class="msg-body">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>`;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
+  const av = document.createElement('div');
+  av.className = 'avatar ' + (role === 'user' ? 'user-av' : 'ai');
+  av.textContent = role === 'user' ? 'Du' : 'AI';
 
-function addThinking() {
-  const msgs = document.getElementById('messages');
-  const div = document.createElement('div');
-  div.className = 'msg bot';
-  div.id = 'thinking-msg';
-  div.innerHTML = `<div class="msg-avatar">AI</div><div class="msg-body"><div class="thinking-dots"><span></span><span></span><span></span></div></div>`;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-  return div;
-}
-
-function removeThinking() {
-  const el = document.getElementById('thinking-msg');
-  if (el) el.remove();
-}
-
-function renderBotReply(text) {
-  const csvMatch = text.match(/```csv\n([\s\S]+?)```/);
-  const csvContent = csvMatch ? csvMatch[1].trim() : null;
-
-  const warningMatch = text.match(/([A-ZÆØÅ\s]+MANGLER[^\n]*)/g);
-
-  let html = text
-    .replace(/```csv\n([\s\S]+?)```/g, (_, c) => `<pre>${c.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`)
-    .replace(/```[\w]*\n?([\s\S]+?)```/g, (_, c) => `<pre>${c.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`)
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>');
-
-  let bannerHtml = '';
-  if (warningMatch) {
-    bannerHtml = warningMatch.map(w => `<div class="warning-banner">⚠️ ${w.trim()}</div>`).join('');
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  if (isHtml) {
+    bubble.innerHTML = content;
+  } else {
+    bubble.innerHTML = formatMessage(content);
   }
 
-  addBotMessage(bannerHtml + html, csvContent);
+  wrapper.appendChild(av);
+  wrapper.appendChild(bubble);
+  container.appendChild(wrapper);
+  container.scrollTop = container.scrollHeight;
+  return bubble;
 }
 
-function downloadCsv(content) {
-  const bom = '\uFEFF';
-  const blob = new Blob([bom + content], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'woocommerce_import_' + new Date().toISOString().slice(0,10) + '.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+function formatMessage(text) {
+  // Bold **text**
+  let html = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Code blocks
+  html = html.replace(/```[\w]*\n?([\s\S]+?)```/g, '<pre>$1</pre>');
+  // Line breaks
+  html = html.replace(/\n/g, '<br/>');
+  return html;
 }
 
-// ── SEND ──
-function sendCmd(cmd) {
-  document.getElementById('user-input').value = cmd;
-  sendMessage();
+function showTyping() {
+  const container = document.getElementById('messages');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'msg assistant';
+  wrapper.id = 'typing-indicator';
+
+  const av = document.createElement('div');
+  av.className = 'avatar ai';
+  av.textContent = 'AI';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = '<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+
+  wrapper.appendChild(av);
+  wrapper.appendChild(bubble);
+  container.appendChild(wrapper);
+  container.scrollTop = container.scrollHeight;
 }
 
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+// ── CSV detection & download ──
+function extractAndOfferCSV(text, bubble) {
+  // Look for semicolon-delimited CSV block
+  const csvMatch = text.match(/```(?:csv)?\n?([\s\S]*?Id;Type;[\s\S]+?)```/i)
+    || text.match(/(Id;Type;SKU[\s\S]+?)(?:\n\n|\n(?=[A-Z]))/);
+
+  if (csvMatch) {
+    const csvData = csvMatch[1].trim();
+    const btn = document.createElement('a');
+    btn.className = 'download-btn';
+    btn.textContent = '⬇ Last ned CSV';
+    btn.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvData);
+    btn.download = 'woocommerce-import.csv';
+    bubble.appendChild(btn);
+  }
+}
+
+// ── Main send logic ──
 async function sendMessage() {
-  const ta = document.getElementById('user-input');
-  const text = ta.value.trim();
-  if (!text || document.getElementById('send-btn').disabled) return;
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
 
-  ta.value = ''; ta.style.height = 'auto';
+  inp.value = '';
+  autoResize(inp);
   document.getElementById('send-btn').disabled = true;
-  addUserMessage(text);
 
-  let userContent = text;
-  if (uploadedFileContent) {
-    userContent = `Filinnhold fra "${uploadedFileContent.name}":\n\n${uploadedFileContent.content}\n\n---\nBrukerens melding: ${text}`;
-    clearFile();
+  appendMessage('user', text);
+
+  // Build message for API
+  let userContent;
+  if (uploadedFileContent && conversationHistory.length === 0) {
+    if (uploadedFileContent.type === 'pdf') {
+      userContent = [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: uploadedFileContent.data } },
+        { type: 'text', text: text + '\n\n[Vedlegg: ' + uploadedFileContent.name + ']' }
+      ];
+    } else {
+      userContent = [
+        { type: 'text', text: text + '\n\n--- Innhold fra ' + uploadedFileContent.name + ' ---\n' + uploadedFileContent.data }
+      ];
+    }
+    uploadedFileContent = null; // only attach once
+  } else {
+    userContent = text;
   }
 
   conversationHistory.push({ role: 'user', content: userContent });
-  addThinking();
+
+  showTyping();
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4096,
         system: SYSTEM_PROMPT,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: conversationHistory
       })
     });
 
-    const data = await res.json();
-    removeThinking();
+    const data = await response.json();
+    removeTyping();
 
     if (data.error) {
-      if (data.error.type === 'authentication_error') {
-        addBotMessage('API-nøkkelen er ugyldig eller utløpt. Klikk "Bytt nøkkel" for å legge inn en ny nøkkel.');
-      } else {
-        addBotMessage('Feil fra API: ' + data.error.message);
-      }
-      conversationHistory.pop();
-    } else {
-      const reply = data.content.map(b => b.text || '').join('');
-      conversationHistory.push({ role: 'assistant', content: reply });
-      renderBotReply(reply);
+      appendMessage('assistant', '⚠️ API-feil: ' + data.error.message);
+      document.getElementById('send-btn').disabled = false;
+      return;
     }
-  } catch(e) {
-    removeThinking();
-    addBotMessage('Nettverksfeil – sjekk internettilkoblingen og prøv igjen.');
-    conversationHistory.pop();
+
+    // Combine all text blocks
+    const fullText = (data.content || [])
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('\n');
+
+    conversationHistory.push({ role: 'assistant', content: data.content });
+
+    const bubble = appendMessage('assistant', fullText);
+    extractAndOfferCSV(fullText, bubble);
+
+  } catch (err) {
+    removeTyping();
+    appendMessage('assistant', '⚠️ Nettverksfeil: ' + err.message + '. Sjekk at du er på claude.ai og at API-tilgang er aktivert.');
   }
 
   document.getElementById('send-btn').disabled = false;
-  ta.focus();
+  document.getElementById('chat-input').focus();
 }
 </script>
 </body>
