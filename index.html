@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WooCommerce Produkt CSV Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Mono:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f2ed; --surface: #faf8f5; --surface2: #ede9e2;
+  --border: rgba(60,45,30,0.1); --border2: rgba(60,45,30,0.2);
+  --text: #2a2118; --muted: #8a7d6e;
+  --accent: #6b7c5c; --accent-dim: rgba(107,124,92,0.1); --accent-dim2: rgba(107,124,92,0.2);
+  --warn: #b07d3a; --warn-dim: rgba(176,125,58,0.1);
+  --fd: 'Cormorant Garamond', serif; --fb: 'Jost', sans-serif; --fm: 'DM Mono', monospace;
+  --r: 4px; --rl: 6px;
+}
+body { background:var(--bg); color:var(--text); font-family:var(--fb); font-size:15px; font-weight:300; line-height:1.6; min-height:100vh; display:flex; flex-direction:column; }
+
+header { padding:.9rem 2rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--surface); }
+.logo { font-family:var(--fd); font-weight:500; font-size:1.3rem; letter-spacing:.06em; text-transform:uppercase; display:flex; align-items:center; gap:12px; }
+.badge { background:var(--accent); color:#faf8f5; font-size:9px; font-family:var(--fb); font-weight:400; padding:2px 8px; border-radius:2px; letter-spacing:.12em; text-transform:uppercase; }
+.hint { font-size:11px; color:var(--muted); font-family:var(--fm); }
+
+.layout { display:flex; flex:1; overflow:hidden; height:calc(100vh - 54px); }
+
+.sidebar { width:220px; min-width:220px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.25rem 0; overflow-y:auto; }
+.sb { padding:0 1rem 1rem; }
+.sbl { font-size:9px; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); font-family:var(--fb); margin-bottom:.6rem; }
+.sbhr { border:none; border-top:1px solid var(--border); margin:.5rem 1rem; }
+
+.uzone { border:1.5px dashed var(--border2); border-radius:var(--r); cursor:pointer; transition:border-color .2s,background .2s; position:relative; overflow:hidden; }
+.uzone:hover,.uzone.over { border-color:var(--accent); background:var(--accent-dim); }
+.uzone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; z-index:1; }
+.u-idle { display:flex; flex-direction:column; align-items:center; gap:6px; padding:1rem .75rem; pointer-events:none; }
+.u-icon { width:34px; height:34px; background:var(--surface2); border:1px solid var(--border2); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.u-icon svg { width:15px; height:15px; }
+.u-title { font-size:12px; font-weight:400; color:var(--text); text-align:center; }
+.u-sub { font-size:10px; color:var(--muted); font-family:var(--fm); }
+.u-active { display:none; align-items:center; gap:8px; padding:.7rem .75rem; pointer-events:none; }
+.u-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+.u-name { font-size:11px; color:var(--accent); font-family:var(--fm); word-break:break-all; line-height:1.3; }
+.uzone.has-file .u-idle { display:none; }
+.uzone.has-file .u-active { display:flex; }
+.uzone.has-file { border-style:solid; border-color:var(--accent); background:var(--accent-dim); }
+.u-clr { position:absolute; top:5px; right:5px; z-index:2; background:var(--surface2); border:1px solid var(--border2); border-radius:50%; width:18px; height:18px; display:none; align-items:center; justify-content:center; cursor:pointer; font-size:9px; color:var(--muted); pointer-events:all; line-height:1; }
+.uzone.has-file .u-clr { display:flex; }
+
+.cmds { display:flex; flex-direction:column; gap:1px; }
+.cmd { background:none; border:none; color:var(--text); font-family:var(--fm); font-size:11.5px; padding:6px 10px; border-radius:3px; cursor:pointer; text-align:left; transition:background .15s; display:flex; align-items:center; gap:7px; width:100%; }
+.cmd:hover { background:var(--surface2); }
+.ctag { color:var(--accent); font-weight:500; }
+.cdesc { color:var(--muted); font-size:10px; }
+
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.msgs { flex:1; overflow-y:auto; padding:1.5rem 2rem; display:flex; flex-direction:column; gap:1.25rem; scrollbar-width:thin; scrollbar-color:var(--border2) transparent; }
+
+.msg { display:flex; gap:12px; }
+.msg.u { flex-direction:row-reverse; align-self:flex-end; max-width:75%; }
+.msg.a { align-self:flex-start; max-width:93%; }
+.av { width:30px; height:30px; min-width:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; font-family:var(--fb); letter-spacing:.04em; }
+.av.ai { background:var(--accent-dim2); color:var(--accent); border:1px solid rgba(107,124,92,.3); }
+.av.me { background:var(--surface2); color:var(--muted); border:1px solid var(--border2); }
+.mcol { display:flex; flex-direction:column; gap:4px; min-width:0; }
+.mmeta { font-size:10px; color:var(--muted); font-family:var(--fm); padding:0 3px; }
+.msg.u .mmeta { text-align:right; }
+.bbl { background:var(--surface); border:1px solid var(--border); border-radius:var(--rl); padding:.85rem 1.1rem; font-size:14px; font-weight:300; line-height:1.7; }
+.msg.u .bbl { background:var(--surface2); border-color:var(--border2); }
+.bbl strong { font-weight:500; }
+.bbl code { font-family:var(--fm); font-size:11px; background:var(--surface2); padding:1px 5px; border-radius:3px; }
+.bbl pre { background:var(--bg); border:1px solid var(--border); border-radius:var(--r); padding:.75rem 1rem; overflow-x:auto; font-family:var(--fm); font-size:11px; margin:.6rem 0; line-height:1.5; white-space:pre; scrollbar-width:thin; }
+.bbl ul,.bbl ol { padding-left:1.3rem; }
+.bbl li { margin-bottom:2px; }
+
+.dl-btn { display:inline-flex; align-items:center; gap:8px; margin-top:.85rem; background:var(--accent); color:#faf8f5; font-family:var(--fb); font-weight:400; font-size:11px; letter-spacing:.1em; text-transform:uppercase; padding:9px 18px; border-radius:3px; cursor:pointer; border:none; transition:opacity .15s; text-decoration:none; }
+.dl-btn:hover { opacity:.85; }
+
+.trow { display:flex; align-items:center; gap:10px; }
+.dots { display:flex; gap:4px; }
+.dot { width:5px; height:5px; background:var(--muted); border-radius:50%; animation:blink 1.2s infinite; }
+.dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.tms { font-size:11px; font-family:var(--fm); color:var(--muted); }
+
+.iarea { padding:.9rem 2rem 1.1rem; border-top:1px solid var(--border); background:var(--surface); }
+.irow { display:flex; gap:10px; align-items:flex-end; background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); padding:.55rem .75rem; transition:border-color .2s; }
+.irow:focus-within { border-color:var(--accent); }
+#ci { flex:1; background:none; border:none; outline:none; color:var(--text); font-family:var(--fb); font-size:14px; font-weight:300; resize:none; min-height:24px; max-height:140px; line-height:1.5; }
+#ci::placeholder { color:var(--muted); }
+.sbtn { background:var(--accent); border:none; color:#faf8f5; width:32px; height:32px; border-radius:3px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:opacity .15s; }
+.sbtn:hover{opacity:.85} .sbtn:disabled{opacity:.35;cursor:default}
+.sbtn svg{width:14px;height:14px}
+.pills { display:flex; flex-wrap:wrap; gap:6px; margin-top:.55rem; }
+.pill { font-size:11px; font-family:var(--fb); font-weight:400; letter-spacing:.04em; color:var(--muted); background:transparent; border:1px solid var(--border2); border-radius:2px; padding:3px 10px; cursor:pointer; transition:color .15s,border-color .15s,background .15s; }
+.pill:hover { color:var(--accent); border-color:var(--accent); background:var(--accent-dim); }
+
+.welcome { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:3rem 2rem; gap:1rem; }
+.wtit { font-family:var(--fd); font-weight:400; font-size:2.4rem; letter-spacing:.03em; line-height:1.15; }
+.wtit span { color:var(--accent); font-style:italic; }
+.wsub { color:var(--muted); font-size:13.5px; font-weight:300; max-width:400px; }
+.fgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:540px; margin-top:.5rem; }
+.fc { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.85rem 1rem; text-align:left; }
+.fct { font-weight:500; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px; color:var(--accent); }
+.fcs { color:var(--muted); font-size:12px; font-weight:300; line-height:1.4; }
+
+@media(max-width:640px){
+  .sidebar{display:none} .layout{height:calc(100vh - 52px)}
+  .msgs{padding:1rem} .iarea{padding:.75rem 1rem 1rem}
+  .fgrid{grid-template-columns:1fr 1fr} .wtit{font-size:1.5rem}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect width="18" height="18" rx="2" fill="#6b7c5c"/><path d="M4 9h10M9 4v10" stroke="#faf8f5" stroke-width="1.8" stroke-linecap="round"/></svg>
+    WooCommerce Produkt CSV Agent
+    <span class="badge">Claude AI</span>
+  </div>
+  <span class="hint">novooi.com</span>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb">
+      <div class="sbl">Last opp fil</div>
+      <div class="uzone" id="dz">
+        <input type="file" id="fi" accept=".pdf,.xlsx,.xls,.csv,.txt" />
+        <div class="u-idle">
+          <div class="u-icon">
+            <svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5v8M4.5 5.5l3-3 3 3M2 11v1.5A1 1 0 003 13.5h9a1 1 0 001-1V11" stroke="#6b7c5c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="u-title">Last opp produktliste</div>
+          <div class="u-sub">PDF · Excel · CSV · TXT</div>
+        </div>
+        <div class="u-active">
+          <div class="u-dot"></div>
+          <div class="u-name" id="ufn">—</div>
+        </div>
+        <div class="u-clr" id="uclr">✕</div>
+      </div>
+    </div>
+    <hr class="sbhr"/>
+    <div class="sb">
+      <div class="sbl">Kommandoer</div>
+      <div class="cmds">
+        <button class="cmd" onclick="ic('/help')"><span class="ctag">/help</span><span class="cdesc">Alle kommandoer</span></button>
+        <button class="cmd" onclick="ic('/preview')"><span class="ctag">/preview</span><span class="cdesc">Forhåndsvisning</span></button>
+        <button class="cmd" onclick="ic('/validate')"><span class="ctag">/validate</span><span class="cdesc">Sjekk konsistens</span></button>
+        <button class="cmd" onclick="ic('/fill-prices')"><span class="ctag">/fill-prices</span><span class="cdesc">Hent priser</span></button>
+        <button class="cmd" onclick="ic('/fill-dimensions')"><span class="ctag">/fill-dimensions</span><span class="cdesc">Hent mål</span></button>
+        <button class="cmd" onclick="ic('/export')"><span class="ctag">/export</span><span class="cdesc">Generer CSV</span></button>
+        <button class="cmd" onclick="ic('/search-tariff ')"><span class="ctag">/search-tariff</span><span class="cdesc">Finn tolltariff</span></button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="msgs" id="msgs">
+      <div class="welcome" id="wlc">
+        <div class="wtit">Konverter kataloger<br/>til <span>WooCommerce CSV</span></div>
+        <div class="wsub">Last opp en produktliste eller lim inn en URL. Agenten genererer en importklar CSV med varianter, SKU-er, beskrivelser og tariffkoder.</div>
+        <div class="fgrid">
+          <div class="fc"><div class="fct">Varianter</div><div class="fcs">Korrekt parent + variation-struktur</div></div>
+          <div class="fc"><div class="fct">SEO-tekster</div><div class="fcs">Engelske og norske beskrivelser</div></div>
+          <div class="fc"><div class="fct">Tariffkoder</div><div class="fcs">HS/EU-koder søkes automatisk</div></div>
+          <div class="fc"><div class="fct">SKU-er</div><div class="fcs">Unike koder for alle varianter</div></div>
+          <div class="fc"><div class="fct">Priser</div><div class="fcs">Hentes fra liste eller nettside</div></div>
+          <div class="fc"><div class="fct">Mal</div><div class="fcs">Følger din Template_Import.csv</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="iarea">
+      <div class="irow">
+        <textarea id="ci" placeholder="Beskriv produkter, lim inn URL, eller skriv /help…" rows="1" onkeydown="hk(event)" oninput="ar(this)"></textarea>
+        <button class="sbtn" id="sb" onclick="send()">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div class="pills">
+        <span class="pill" onclick="sp('Generer CSV fra denne produktlisten')">Generer CSV</span>
+        <span class="pill" onclick="sp('/preview')">Forhåndsvisning</span>
+        <span class="pill" onclick="sp('/export')">Eksporter</span>
+        <span class="pill" onclick="sp('/validate')">Valider</span>
+        <span class="pill" onclick="sp('/help')">Hjelp</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// System prompt built directly from Template_Import.csv
+const SP = `Du er en WooCommerce produktimport-agent for Novooi. Du konverterer produktlister, PDF-kataloger og nettsider til en ferdig WooCommerce CSV-importfil.
+
+=== EKSAKT KOLONNESTRUKTUR ===
+Kopier denne headeren 100% nøyaktig som første linje i CSV:
+ID;Type;Name;SKU;Parent;Regular price;Short description for SEO ;Product Description (Norsk);In stock?;Stock;Backorders allowed?;Weight (kg);Length (cm);Width (cm);Height (cm);Meta: _logistra_robots_product_freight_description;Meta: _logistra_robots_product_commodity_code;Meta: _estimated_shipping_text;Meta: _production_type;Position;Attribute 1 name;Attribute 1 value(s);Attribute 1 visible;Attribute 1 global;Attribute 2 name;Attribute 2 value(s);Attribute 2 visible;Attribute 2 global;Meta: _wpcom_is_markdown;Download 1 name;Download 1 URL;Download 2 name;Download 2 URL;Tax status;Date sale price starts;Date sale price ends;Tax class;Published;Is featured?;Visibility in catalog;Allow customer reviews?
+
+Merk: "Short description for SEO " har et mellomrom på slutten — dette er en del av kolonnenavnet.
+
+GRUNNREGLER:
+- Delimiter: semikolon (;) — alltid, ingen unntak
+- ID-kolonnen: alltid tom (aldri fyll inn ID)
+- Aldri bruk em-dash (–), bruk bindestrek (-) om nødvendig
+- Pris skrives aldri med komma (bruk 46990 eller 46990.00, ikke 46.990 eller 46,990)
+
+=== PRODUKTSTRUKTUR MED VARIANTER ===
+
+PARENT-rad (produkter med varianter):
+- ID = tom
+- Type = variable
+- Name = produktnavn
+- SKU = unik kode (PRODUSENT-PRODUKT)
+- Parent = TOM (viktig: alltid tom på parent)
+- Regular price = TOM (pris kun på variantrader)
+- Short description for SEO = engelske SEO-tekst, 120-158 tegn nøyaktig
+- Product Description (Norsk) = norsk beskrivelse, 5-8 setninger + punktliste
+- Attribute 1 value(s) = ALLE mulige verdier: "Svart, Hvit, Grå"
+- In stock? = 1, Backorders allowed? = 1
+
+VARIANT-rad:
+- ID = tom
+- Type = variation
+- Name = IDENTISK som parent (ikke legg til farge/størrelse i Name)
+- SKU = unik kode (PRODUSENT-PRODUKT-VARIANT)
+- Parent = eksakt SKU til parent-raden — DETTE ER KRITISK. Feil her gir separate produkter.
+- Regular price = pris for denne varianten
+- Short description for SEO = TOM
+- Product Description (Norsk) = TOM (maks 1 setning ved viktige forskjeller)
+- Attribute 1 value(s) = kun én verdi: "Svart"
+
+ALLE RADER (defaults):
+- In stock? = 1
+- Backorders allowed? = 1
+- Meta: _wpcom_is_markdown = 1
+- Published = 0
+- Is featured? = 0
+- Visibility in catalog = visible
+- Allow customer reviews? = 1
+- Position = tom
+- Download-felter = tomme
+- Tax status = taxable
+- Tax class = tom
+- Date sale price starts/ends = tomme
+
+=== ENKELT PRODUKT (ingen varianter) ===
+- Type = simple
+- Parent = TOM
+- Regular price = pris her
+
+=== EKSEMPEL FRA DIN TEMPLATE_IMPORT.CSV ===
+Parent:
+;variable;Expand dining table;SKELAB-EXPAND-TABLE;;;With its curved apron and slightly angled legs...;Elegant og uttrekkbart...;1;;1;68;204;94;12;Wooden furniture for dining rooms;94036010;3 - 6 uker;Produseres på bestilling;;Material;Black painted oak, Light oiled oak, Smoked oak;1;1;Size;200 x 90, 250 x 90;1;1;1;;;;;;;;;;0;0;visible;1
+
+Variant:
+;variation;Expand dining table;SKELAB-EXPAND-200-SORT;SKELAB-EXPAND-TABLE;46990;;;1;;1;68;204;94;12;Wooden furniture for dining rooms;94036010;3 - 6 uker;Produseres på bestilling;;Material;Black painted oak;1;1;Size;200 x 90;1;1;1;;;;;;;;;;0;0;visible;1
+
+=== SKU ===
+- Format: STORE BOKSTAVER, bindestrek, ingen mellomrom
+- Parent: PRODUSENT-PRODUKT
+- Variant: PRODUSENT-PRODUKT-VARIANT
+- Alle SKU-er må være unike
+
+=== NAVN ===
+- Kun produktnavn, ingen produsentprefiks
+- For generiske navn: legg til kategori (f.eks. "Silla stol", "Ami sofa")
+- Variantnavn = identisk med parent
+
+=== TAGS ===
+- Kun produsentnavn og/eller designernavn
+- Komma + mellomrom: "Muuto, Cecilie Manz"
+
+=== BESKRIVELSER ===
+Short description for SEO (kun parent/simple):
+- Engelsk
+- NØYAKTIG 120-158 tegn
+
+Product Description (Norsk) (kun parent/simple):
+- Norsk, faktabasert, 5-8 setninger
+- Punktliste med mål, vekt og viktig info etterpå
+- Ikke nevn manglende informasjon
+
+=== TARIFF OG FRAKT ===
+- Meta: _logistra_robots_product_freight_description = kort setning, f.eks. "Polstret stol med metallramme"
+- Meta: _logistra_robots_product_commodity_code = HS-kode, f.eks. 94016100
+- Meta: _estimated_shipping_text = leveringstid, f.eks. "14 - 21 dager" eller "8 - 12 uker"
+  Søk aktivt på produsentens nettside. Oppgi kilden i svaret (ikke i CSV). EKSTREMT VIKTIG.
+
+=== PRODUKSJONSTYPE ===
+- "Storproduksjon tilgjengelig", "Produseres på bestilling" eller "Begrenset opplag"
+- Bruk "Storproduksjon tilgjengelig" hvis ukjent
+
+=== ATTRIBUTTER ===
+- Parent: alle verdier med komma+mellomrom: "Svart, Hvit"
+- Variant: kun én verdi: "Svart"
+- Aldri bruk komma inne i én verdi
+- Attribute visible = 1, global = 1
+
+=== MANGLENDE INFO ===
+La felt stå tom i CSV. Skriv OVER csv-blokken:
+⚠️ MANGLER: [felt] må fylles inn manuelt.
+
+=== KOMMANDOER ===
+/help — vis alle kommandoer
+/preview — vis parent + én variant
+/validate — sjekk SKU, Parent-referanser, attributter
+/fill-prices — hent priser fra nett
+/fill-dimensions — hent mål/vekt fra nett
+/search-tariff [navn] — søk HS-kode
+/export — generer ferdig CSV
+
+=== OUTPUT ===
+Lever CSV i kodeblokk med ID;Type; som første kolonner i headeren:
+\`\`\`csv
+ID;Type;Name;...
+;variable;...
+;variation;...
+\`\`\`
+
+Svar på norsk med mindre brukeren skriver et annet språk.`;
+
+const WU = 'https://woocommerce-import2.marcus-aas-mekiassen.workers.dev';
+let hist = [], upFile = null, tmr = null, t0 = null;
+
+// File upload
+const dz = document.getElementById('dz');
+const fi = document.getElementById('fi');
+const ufn = document.getElementById('ufn');
+const uclr = document.getElementById('uclr');
+
+dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave', ()=>dz.classList.remove('over'));
+dz.addEventListener('drop', e=>{e.preventDefault();dz.classList.remove('over');if(e.dataTransfer.files[0])pf(e.dataTransfer.files[0]);});
+fi.addEventListener('change', e=>{if(e.target.files[0])pf(e.target.files[0]);});
+uclr.addEventListener('click', e=>{e.preventDefault();e.stopPropagation();rf();});
+
+function pf(f){
+  ufn.textContent=f.name; dz.classList.add('has-file');
+  const r=new FileReader();
+  if(f.type==='application/pdf'){r.readAsDataURL(f);r.onload=()=>{upFile={type:'pdf',data:r.result.split(',')[1],name:f.name};};}
+  else{r.readAsText(f);r.onload=()=>{upFile={type:'text',data:r.result,name:f.name};};}
+}
+function rf(){upFile=null;fi.value='';ufn.textContent='—';dz.classList.remove('has-file');}
+
+// Timer
+function startTmr(id){t0=Date.now();tmr=setInterval(()=>{const el=document.getElementById(id);if(el)el.textContent=((Date.now()-t0)/1000).toFixed(1)+'s';},100);}
+function stopTmr(){clearInterval(tmr);return((Date.now()-t0)/1000).toFixed(1);}
+
+// Helpers
+function ic(c){const i=document.getElementById('ci');i.value=c;i.focus();ar(i);}
+function sp(c){const i=document.getElementById('ci');i.value=c;i.focus();ar(i);}
+function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}
+function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function hw(){const w=document.getElementById('wlc');if(w)w.remove();}
+
+function fmt(t){
+  let h=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  h=h.replace(/```(?:csv)?\n?([\s\S]+?)```/g,'<pre>$1</pre>');
+  h=h.replace(/\n/g,'<br/>');
+  return h;
+}
+
+function addMsg(role,text){
+  hw();
+  const c=document.getElementById('msgs');
+  const w=document.createElement('div');
+  w.className='msg '+(role==='user'?'u':'a');
+  const av=document.createElement('div');
+  av.className='av '+(role==='user'?'me':'ai');
+  av.textContent=role==='user'?'Deg':'AI';
+  const col=document.createElement('div');
+  col.className='mcol';
+  const b=document.createElement('div');
+  b.className='bbl';
+  b.innerHTML=fmt(text);
+  col.appendChild(b);
+  w.appendChild(av);w.appendChild(col);
+  c.appendChild(w);c.scrollTop=c.scrollHeight;
+  return{b,col};
+}
+
+function addMeta(col,txt){
+  const m=document.createElement('div');
+  m.className='mmeta';m.textContent=txt;col.appendChild(m);
+}
+
+function showTyping(){
+  hw();
+  const c=document.getElementById('msgs');
+  const w=document.createElement('div');
+  w.className='msg a';w.id='typ';
+  const av=document.createElement('div');av.className='av ai';av.textContent='AI';
+  const col=document.createElement('div');col.className='mcol';
+  const b=document.createElement('div');b.className='bbl';
+  b.innerHTML='<div class="trow"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="tms" id="ltmr">0.0s</span></div>';
+  col.appendChild(b);w.appendChild(av);w.appendChild(col);
+  c.appendChild(w);c.scrollTop=c.scrollHeight;
+  startTmr('ltmr');
+}
+
+function rmTyping(){const s=stopTmr();const t=document.getElementById('typ');if(t)t.remove();return s;}
+
+function offerCSV(text,col){
+  // Match CSV block starting with the header
+  const m=text.match(/```(?:csv)?\n?(ID;Type;[\s\S]+?)```/i);
+  if(!m)return;
+  const csv=m[1].trim();
+  const a=document.createElement('a');
+  a.className='dl-btn';
+  a.innerHTML='<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7M3.5 6l3 3 3-3M1 10v1.5A1 1 0 002 12.5h9a1 1 0 001-1V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Last ned CSV';
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='novooi-woocommerce-import.csv';
+  const b=col.querySelector('.bbl');
+  if(b)b.appendChild(a);
+}
+
+async function send(){
+  const inp=document.getElementById('ci');
+  const text=inp.value.trim();
+  if(!text)return;
+  inp.value='';ar(inp);
+  document.getElementById('sb').disabled=true;
+
+  addMsg('user',text);
+
+  let content;
+  if(upFile&&hist.length===0){
+    if(upFile.type==='pdf'){
+      content=[{type:'document',source:{type:'base64',media_type:'application/pdf',data:upFile.data}},{type:'text',text:text+'\n\n[Fil: '+upFile.name+']'}];
+    } else {
+      content=[{type:'text',text:text+'\n\n--- Innhold fra '+upFile.name+' ---\n'+upFile.data}];
+    }
+    upFile=null;
+  } else {
+    content=text;
+  }
+
+  hist.push({role:'user',content});
+  showTyping();
+
+  try {
+    const res=await fetch(WU,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:8000,
+        system:SP,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:hist
+      })
+    });
+    const data=await res.json();
+    const elapsed=rmTyping();
+
+    if(data.error){
+      addMsg('assistant','⚠️ API-feil: '+data.error.message);
+      document.getElementById('sb').disabled=false;
+      return;
+    }
+
+    const fullText=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    hist.push({role:'assistant',content:data.content});
+
+    const {b,col}=addMsg('assistant',fullText);
+    addMeta(col,'Svartid: '+elapsed+'s'+(data.usage?' · '+data.usage.output_tokens+' tokens':''));
+    offerCSV(fullText,col);
+
+  } catch(err){
+    rmTyping();
+    addMsg('assistant','⚠️ Feil: '+err.message);
+  }
+
+  document.getElementById('sb').disabled=false;
+  document.getElementById('ci').focus();
+}
+</script>
+</body>
+</html>
