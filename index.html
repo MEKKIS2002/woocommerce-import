@@ -101,16 +101,20 @@ header { padding:.9rem 2rem; border-bottom:1px solid var(--border); display:flex
 .welcome { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:3rem 2rem; gap:1rem; }
 .wtit { font-family:var(--fd); font-weight:400; font-size:2.4rem; letter-spacing:.03em; line-height:1.15; }
 .wtit span { color:var(--accent); font-style:italic; }
-.wsub { color:var(--muted); font-size:13.5px; font-weight:300; max-width:400px; }
-.fgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:540px; margin-top:.5rem; }
-.fc { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.85rem 1rem; text-align:left; }
-.fct { font-weight:500; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px; color:var(--accent); }
-.fcs { color:var(--muted); font-size:12px; font-weight:300; line-height:1.4; }
+.wsub { color:var(--muted); font-size:13.5px; font-weight:300; max-width:440px; }
+.fgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:600px; margin-top:.5rem; }
+.fc { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.9rem 1rem; text-align:left; }
+.fc.link-card { cursor:pointer; transition:border-color .2s, background .2s; text-decoration:none; display:block; }
+.fc.link-card:hover { border-color:var(--accent); background:var(--accent-dim); }
+.fc-num { font-family:var(--fd); font-size:1.3rem; color:var(--accent); font-weight:400; margin-bottom:4px; line-height:1; }
+.fct { font-weight:500; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:5px; color:var(--accent); }
+.fcs { color:var(--muted); font-size:12px; font-weight:300; line-height:1.45; }
+.fc-link-label { display:inline-flex; align-items:center; gap:4px; margin-top:7px; font-size:10px; font-family:var(--fm); color:var(--accent); letter-spacing:.06em; text-transform:uppercase; }
 
 @media(max-width:640px){
   .sidebar{display:none} .layout{min-height:0}
   .msgs{padding:1rem} .iarea{padding:.75rem 1rem 1rem}
-  .fgrid{grid-template-columns:1fr 1fr} .wtit{font-size:1.5rem}
+  .fgrid{grid-template-columns:1fr 1fr} .wtit{font-size:1.5rem} .wsub{font-size:12.5px}
 }
 </style>
 </head>
@@ -165,12 +169,40 @@ header { padding:.9rem 2rem; border-bottom:1px solid var(--border); display:flex
         <div class="wtit">Konverter kataloger<br/>til <span>WooCommerce CSV</span></div>
         <div class="wsub">Last opp en produktliste eller lim inn en URL. Agenten genererer en importklar CSV med varianter, SKU-er, beskrivelser og tariffkoder.</div>
         <div class="fgrid">
-          <div class="fc"><div class="fct">Varianter</div><div class="fcs">Korrekt parent + variation-struktur</div></div>
-          <div class="fc"><div class="fct">SEO-tekster</div><div class="fcs">Engelske og norske beskrivelser</div></div>
-          <div class="fc"><div class="fct">Tariffkoder</div><div class="fcs">HS/EU-koder søkes automatisk</div></div>
-          <div class="fc"><div class="fct">SKU-er</div><div class="fcs">Unike koder for alle varianter</div></div>
-          <div class="fc"><div class="fct">Priser</div><div class="fcs">Hentes fra liste eller nettside</div></div>
-          <div class="fc"><div class="fct">Mal</div><div class="fcs">Følger din Template_Import.csv</div></div>
+          <div class="fc">
+            <div class="fc-num">1</div>
+            <div class="fct">Last opp eller lim inn</div>
+            <div class="fcs">Bruk opplastingsboksen til venstre for PDF, Excel eller CSV — eller lim inn en URL til produsentens nettside direkte i chatten.</div>
+          </div>
+          <div class="fc">
+            <div class="fc-num">2</div>
+            <div class="fct">Be om forhåndsvisning</div>
+            <div class="fcs">Skriv <code>/preview</code> for å se parent + én variant før hele filen genereres. Gi tilbakemelding og juster om nødvendig.</div>
+          </div>
+          <div class="fc">
+            <div class="fc-num">3</div>
+            <div class="fct">Generer og eksporter</div>
+            <div class="fcs">Skriv <code>/export</code> for ferdig CSV. Agenten fyller inn SKU-er, beskrivelser, tariffkoder og leveringstid automatisk.</div>
+          </div>
+          <div class="fc">
+            <div class="fc-num">4</div>
+            <div class="fct">Valider før import</div>
+            <div class="fcs">Bruk <code>/validate</code> for å sjekke at alle SKU-er er unike, parent-referanser stemmer og attributter er konsistente.</div>
+          </div>
+          <div class="fc">
+            <div class="fc-num">5</div>
+            <div class="fct">Fyll inn det som mangler</div>
+            <div class="fcs">Agenten varsler om manglende priser eller mål. Bruk <code>/fill-prices</code> eller <code>/fill-dimensions</code> for å hente disse automatisk.</div>
+          </div>
+          <a class="fc link-card" href="https://docs.google.com/document/d/1aM1_p6PtNiiBhyDBNhTb2LHKJQfhfnC39FQE9iJ08C4/edit?usp=sharing" target="_blank">
+            <div class="fc-num">✓</div>
+            <div class="fct">Sjekkliste før publisering</div>
+            <div class="fcs">Gå gjennom alle punktene i importguiden før produktene publiseres i WooCommerce.</div>
+            <div class="fc-link-label">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 9L9 1M9 1H3M9 1V7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Åpne sjekkliste
+            </div>
+          </a>
         </div>
       </div>
     </div>
