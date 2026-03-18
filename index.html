@@ -1,120 +1,143 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>WooCommerce Produkt CSV Agent</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzZiN2M1YyIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmYWY4ZjUiPk48L3RleHQ+PC9zdmc+" />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Mono:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzZiN2M1YyIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmYWY4ZjUiPk48L3RleHQ+PC9zdmc+"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Mono:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #f5f2ed; --surface: #faf8f5; --surface2: #ede9e2;
-  --border: rgba(60,45,30,0.1); --border2: rgba(60,45,30,0.2);
-  --text: #2a2118; --muted: #8a7d6e;
-  --accent: #6b7c5c; --accent-dim: rgba(107,124,92,0.1); --accent-dim2: rgba(107,124,92,0.2);
-  --warn: #b07d3a; --warn-dim: rgba(176,125,58,0.1);
-  --fd: 'Cormorant Garamond', serif; --fb: 'Jost', sans-serif; --fm: 'DM Mono', monospace;
-  --r: 4px; --rl: 6px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f2ed;--surface:#faf8f5;--surface2:#ede9e2;
+  --border:rgba(60,45,30,0.1);--border2:rgba(60,45,30,0.2);
+  --text:#2a2118;--muted:#8a7d6e;
+  --accent:#6b7c5c;--adim:rgba(107,124,92,0.1);--adim2:rgba(107,124,92,0.2);
+  --warn:#b07d3a;--wdim:rgba(176,125,58,0.12);
+  --danger:#b03a3a;--ddim:rgba(176,58,58,0.1);
+  --info:#3a6bb0;--idim:rgba(58,107,176,0.08);
+  --fd:"Cormorant Garamond",serif;--fb:"Jost",sans-serif;--fm:"DM Mono",monospace;
+  --r:4px;--rl:6px
 }
-body { background:var(--bg); color:var(--text); font-family:var(--fb); font-size:15px; font-weight:300; line-height:1.6; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
-
-header { padding:.9rem 2rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--surface); }
-.logo { font-family:var(--fd); font-weight:500; font-size:1.3rem; letter-spacing:.06em; text-transform:uppercase; display:flex; align-items:center; gap:12px; }
-.badge { background:var(--accent); color:#faf8f5; font-size:9px; font-family:var(--fb); font-weight:400; padding:2px 8px; border-radius:2px; letter-spacing:.12em; text-transform:uppercase; }
-.hint { font-size:11px; color:var(--muted); font-family:var(--fm); }
-
-.layout { display:flex; flex:1; overflow:hidden; min-height:0; }
-
-.sidebar { width:220px; min-width:220px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.25rem 0; overflow-y:auto; min-height:0; }
-.sb { padding:0 1rem 1rem; }
-.sbl { font-size:9px; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); font-family:var(--fb); margin-bottom:.6rem; }
-.sbhr { border:none; border-top:1px solid var(--border); margin:.5rem 1rem; }
-
-.uzone { border:1.5px dashed var(--border2); border-radius:var(--r); cursor:pointer; transition:border-color .2s,background .2s; position:relative; overflow:hidden; }
-.uzone:hover,.uzone.over { border-color:var(--accent); background:var(--accent-dim); }
-.uzone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; z-index:1; }
-.u-idle { display:flex; flex-direction:column; align-items:center; gap:6px; padding:1rem .75rem; pointer-events:none; }
-.u-icon { width:34px; height:34px; background:var(--surface2); border:1px solid var(--border2); border-radius:50%; display:flex; align-items:center; justify-content:center; }
-.u-icon svg { width:15px; height:15px; }
-.u-title { font-size:12px; font-weight:400; color:var(--text); text-align:center; }
-.u-sub { font-size:10px; color:var(--muted); font-family:var(--fm); }
-.u-active { display:none; align-items:center; gap:8px; padding:.7rem .75rem; pointer-events:none; }
-.u-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
-.u-name { font-size:11px; color:var(--accent); font-family:var(--fm); word-break:break-all; line-height:1.3; }
-.uzone.has-file .u-idle { display:none; }
-.uzone.has-file .u-active { display:flex; }
-.uzone.has-file { border-style:solid; border-color:var(--accent); background:var(--accent-dim); }
-.u-clr { position:absolute; top:5px; right:5px; z-index:2; background:var(--surface2); border:1px solid var(--border2); border-radius:50%; width:18px; height:18px; display:none; align-items:center; justify-content:center; cursor:pointer; font-size:9px; color:var(--muted); pointer-events:all; line-height:1; }
-.uzone.has-file .u-clr { display:flex; }
-
-.cmds { display:flex; flex-direction:column; gap:1px; }
-.cmd { background:none; border:none; color:var(--text); font-family:var(--fm); font-size:11.5px; padding:6px 10px; border-radius:3px; cursor:pointer; text-align:left; transition:background .15s; display:flex; align-items:center; gap:7px; width:100%; }
-.cmd:hover { background:var(--surface2); }
-.ctag { color:var(--accent); font-weight:500; }
-.cdesc { color:var(--muted); font-size:10px; }
-
-.main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
-.msgs { flex:1; overflow-y:auto; padding:1.5rem 2rem; display:flex; flex-direction:column; gap:1.25rem; scrollbar-width:thin; scrollbar-color:var(--border2) transparent; min-height:0; }
-
-.msg { display:flex; gap:12px; }
-.msg.u { flex-direction:row-reverse; align-self:flex-end; max-width:75%; }
-.msg.a { align-self:flex-start; max-width:93%; }
-.av { width:30px; height:30px; min-width:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; font-family:var(--fb); letter-spacing:.04em; }
-.av.ai { background:var(--accent-dim2); color:var(--accent); border:1px solid rgba(107,124,92,.3); }
-.av.me { background:var(--surface2); color:var(--muted); border:1px solid var(--border2); }
-.mcol { display:flex; flex-direction:column; gap:4px; min-width:0; }
-.mmeta { font-size:10px; color:var(--muted); font-family:var(--fm); padding:0 3px; }
-.msg.u .mmeta { text-align:right; }
-.bbl { background:var(--surface); border:1px solid var(--border); border-radius:var(--rl); padding:.85rem 1.1rem; font-size:14px; font-weight:300; line-height:1.7; }
-.msg.u .bbl { background:var(--surface2); border-color:var(--border2); }
-.bbl strong { font-weight:500; }
-.bbl code { font-family:var(--fm); font-size:11px; background:var(--surface2); padding:1px 5px; border-radius:3px; }
-.bbl pre { background:var(--bg); border:1px solid var(--border); border-radius:var(--r); padding:.75rem 1rem; overflow-x:auto; font-family:var(--fm); font-size:11px; margin:.6rem 0; line-height:1.5; white-space:pre; scrollbar-width:thin; }
-.bbl ul,.bbl ol { padding-left:1.3rem; }
-.bbl li { margin-bottom:2px; }
-
-.dl-btn { display:inline-flex; align-items:center; gap:8px; margin-top:.85rem; background:var(--accent); color:#faf8f5; font-family:var(--fb); font-weight:400; font-size:11px; letter-spacing:.1em; text-transform:uppercase; padding:9px 18px; border-radius:3px; cursor:pointer; border:none; transition:opacity .15s; text-decoration:none; }
-.dl-btn:hover { opacity:.85; }
-
-.trow { display:flex; align-items:center; gap:12px; }
-.dots { display:flex; gap:4px; flex-shrink:0; }
-.dot { width:5px; height:5px; background:var(--muted); border-radius:50%; animation:blink 1.2s infinite; }
-.dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:15px;font-weight:300;line-height:1.6;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0}
+.logo{font-family:var(--fd);font-weight:500;font-size:1.3rem;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:12px}
+.badge{background:var(--accent);color:#faf8f5;font-size:9px;font-family:var(--fb);font-weight:400;padding:2px 8px;border-radius:2px;letter-spacing:.12em;text-transform:uppercase}
+.hdr-right{display:flex;align-items:center;gap:16px}
+.hint{font-size:11px;color:var(--muted);font-family:var(--fm)}
+.tmeter{display:none;align-items:center;gap:6px}
+.tmeter-lbl{font-size:10px;color:var(--muted);font-family:var(--fm)}
+.tmeter-wrap{width:80px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.tmeter-bar{height:100%;background:var(--accent);border-radius:3px;transition:width .4s,background .4s;width:0%}
+.tmeter-bar.warn{background:var(--warn)}.tmeter-bar.danger{background:var(--danger)}
+.tmeter-pct{font-size:10px;font-family:var(--fm);color:var(--muted);min-width:28px}
+.layout{display:flex;flex:1;overflow:hidden;min-height:0}
+.sidebar{width:225px;min-width:225px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.25rem 0;overflow-y:auto;min-height:0}
+.sb{padding:0 1rem 1rem}
+.sbl{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-family:var(--fb);margin-bottom:.6rem}
+.sbhr{border:none;border-top:1px solid var(--border);margin:.5rem 1rem}
+.uzone{border:1.5px dashed var(--border2);border-radius:var(--r);cursor:pointer;transition:border-color .2s,background .2s;position:relative;overflow:hidden}
+.uzone:hover,.uzone.over{border-color:var(--accent);background:var(--adim)}
+.uzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:1}
+.u-idle{display:flex;flex-direction:column;align-items:center;gap:6px;padding:1rem .75rem;pointer-events:none}
+.u-icon{width:34px;height:34px;background:var(--surface2);border:1px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.u-icon svg{width:15px;height:15px}
+.u-title{font-size:12px;font-weight:400;color:var(--text);text-align:center}
+.u-sub{font-size:10px;color:var(--muted);font-family:var(--fm)}
+.u-active{display:none;align-items:center;gap:8px;padding:.7rem .75rem;pointer-events:none}
+.u-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.u-name{font-size:11px;color:var(--accent);font-family:var(--fm);word-break:break-all;line-height:1.3}
+.uzone.has-file .u-idle{display:none}.uzone.has-file .u-active{display:flex}
+.uzone.has-file{border-style:solid;border-color:var(--accent);background:var(--adim)}
+.u-clr{position:absolute;top:5px;right:5px;z-index:2;background:var(--surface2);border:1px solid var(--border2);border-radius:50%;width:18px;height:18px;display:none;align-items:center;justify-content:center;cursor:pointer;font-size:9px;color:var(--muted);pointer-events:all;line-height:1}
+.uzone.has-file .u-clr{display:flex}
+.cmds{display:flex;flex-direction:column;gap:1px}
+.cmd{background:none;border:none;color:var(--text);font-family:var(--fm);font-size:11.5px;padding:6px 10px;border-radius:3px;cursor:pointer;text-align:left;transition:background .15s;display:flex;align-items:center;gap:7px;width:100%}
+.cmd:hover{background:var(--surface2)}
+.ctag{color:var(--accent);font-weight:500}.cdesc{color:var(--muted);font-size:10px}
+.dl-list{display:flex;flex-direction:column;gap:2px}
+.dl-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:3px;border:1px solid var(--border);background:var(--surface);font-size:10.5px;font-family:var(--fm);cursor:pointer;transition:background .15s;text-decoration:none;overflow:hidden;color:var(--text)}
+.dl-item:hover{background:var(--surface2)}
+.dl-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--accent)}
+.dl-item-time{color:var(--muted);font-size:9.5px;flex-shrink:0}
+.dl-empty{font-size:11px;color:var(--muted);font-family:var(--fm);padding:4px 2px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.alert-banner{padding:.55rem 1.5rem;font-size:12.5px;font-weight:400;display:none;align-items:flex-start;gap:10px;border-bottom:1px solid transparent;flex-shrink:0}
+.alert-banner.warn{display:flex;background:var(--wdim);border-color:rgba(176,125,58,0.2);color:#7a4e10}
+.alert-banner.danger{display:flex;background:var(--ddim);border-color:rgba(176,58,58,0.2);color:#7a1010}
+.alert-banner.info{display:flex;background:var(--idim);border-color:rgba(58,107,176,0.15);color:#1a3d7a}
+.alert-body{flex:1;line-height:1.5}.alert-body strong{font-weight:500}
+.alert-close{background:none;border:none;cursor:pointer;color:inherit;opacity:.5;font-size:14px;padding:0 2px;flex-shrink:0}
+.alert-close:hover{opacity:1}
+.prog-wrap{padding:.35rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);display:none;flex-shrink:0}
+.prog-wrap.active{display:block}
+.prog-bg{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s ease;width:0%}
+.prog-lbl{font-size:10px;font-family:var(--fm);color:var(--muted);margin-top:4px}
+.msgs{flex:1;overflow-y:auto;padding:1.5rem 2rem;display:flex;flex-direction:column;gap:1.25rem;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;min-height:0}
+.msg{display:flex;gap:12px}
+.msg.u{flex-direction:row-reverse;align-self:flex-end;max-width:75%}
+.msg.a{align-self:flex-start;max-width:95%;width:100%}
+.av{width:30px;height:30px;min-width:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;font-family:var(--fb);letter-spacing:.04em}
+.av.ai{background:var(--adim2);color:var(--accent);border:1px solid rgba(107,124,92,.3)}
+.av.me{background:var(--surface2);color:var(--muted);border:1px solid var(--border2)}
+.mcol{display:flex;flex-direction:column;gap:4px;min-width:0;width:100%}
+.mmeta{font-size:10px;color:var(--muted);font-family:var(--fm);padding:0 3px}
+.msg.u .mmeta{text-align:right}
+.bbl{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:.85rem 1.1rem;font-size:14px;font-weight:300;line-height:1.7}
+.msg.u .bbl{background:var(--surface2);border-color:var(--border2)}
+.bbl strong{font-weight:500}
+.bbl code{font-family:var(--fm);font-size:11px;background:var(--surface2);padding:1px 5px;border-radius:3px}
+.bbl pre{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.75rem 1rem;overflow-x:auto;font-family:var(--fm);font-size:11px;margin:.6rem 0;line-height:1.5;white-space:pre;scrollbar-width:thin}
+.bbl ul,.bbl ol{padding-left:1.3rem}.bbl li{margin-bottom:2px}
+.csv-table-wrap{margin:.75rem 0 .5rem;overflow-x:auto;border:1px solid var(--border);border-radius:var(--r);max-height:300px;overflow-y:auto}
+.csv-table{border-collapse:collapse;font-family:var(--fm);font-size:11px;min-width:100%}
+.csv-table th{background:var(--surface2);color:var(--muted);font-size:9.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-bottom:1px solid var(--border2);text-align:left;white-space:nowrap;position:sticky;top:0;z-index:1}
+.csv-table td{padding:5px 10px;border-bottom:1px solid var(--border);vertical-align:top;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.csv-table tr:last-child td{border-bottom:none}
+.csv-table tr:hover td{background:var(--adim)}
+.csv-table td[contenteditable="true"]:focus{outline:1px solid var(--accent);background:var(--adim);border-radius:2px;white-space:normal;overflow:visible;max-width:none;min-width:120px}
+.tv{color:var(--accent);font-weight:500}.tvar{color:var(--muted)}.miss{color:var(--danger);font-style:italic}
+.csv-toggle{font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--fm);cursor:pointer;display:inline-flex;align-items:center;gap:4px;border:none;background:none;padding:2px 0}
+.csv-toggle:hover{color:var(--accent)}
+.dl-btn{display:inline-flex;align-items:center;gap:8px;margin-top:.85rem;margin-right:.4rem;background:var(--accent);color:#faf8f5;font-family:var(--fb);font-weight:400;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 18px;border-radius:3px;cursor:pointer;border:none;transition:opacity .15s;text-decoration:none}
+.dl-btn:hover{opacity:.85}
+.dl-btn.sec{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:6px 12px;font-size:10px;margin-top:.4rem}
+.dl-btn.sec:hover{background:var(--adim)}
+.trow{display:flex;align-items:center;gap:12px}
+.dots{display:flex;gap:4px;flex-shrink:0}
+.dot{width:5px;height:5px;background:var(--muted);border-radius:50%;animation:blink 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
 @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
-.est-wrap { display:flex; flex-direction:column; gap:1px; }
-.est-label { font-size:12px; font-weight:400; color:var(--text); font-family:var(--fb); }
-.tms { font-size:10.5px; font-family:var(--fm); color:var(--muted); }
-
-.iarea { padding:.9rem 2rem 1.1rem; border-top:1px solid var(--border); background:var(--surface); }
-.irow { display:flex; gap:10px; align-items:flex-end; background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); padding:.55rem .75rem; transition:border-color .2s; }
-.irow:focus-within { border-color:var(--accent); }
-#ci { flex:1; background:none; border:none; outline:none; color:var(--text); font-family:var(--fb); font-size:14px; font-weight:300; resize:none; min-height:24px; max-height:140px; line-height:1.5; }
-#ci::placeholder { color:var(--muted); }
-.sbtn { background:var(--accent); border:none; color:#faf8f5; width:32px; height:32px; border-radius:3px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:opacity .15s; }
-.sbtn:hover{opacity:.85} .sbtn:disabled{opacity:.35;cursor:default}
+.est-wrap{display:flex;flex-direction:column;gap:1px}
+.est-label{font-size:12px;font-weight:400;color:var(--text);font-family:var(--fb)}
+.tms{font-size:10.5px;font-family:var(--fm);color:var(--muted)}
+.iarea{padding:.9rem 2rem 1.1rem;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.irow{display:flex;gap:10px;align-items:flex-end;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.55rem .75rem;transition:border-color .2s}
+.irow:focus-within{border-color:var(--accent)}
+#ci{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:var(--fb);font-size:14px;font-weight:300;resize:none;min-height:24px;max-height:140px;line-height:1.5}
+#ci::placeholder{color:var(--muted)}
+.sbtn{background:var(--accent);border:none;color:#faf8f5;width:32px;height:32px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
+.sbtn:hover{opacity:.85}.sbtn:disabled{opacity:.35;cursor:default}
 .sbtn svg{width:14px;height:14px}
-.pills { display:flex; flex-wrap:wrap; gap:6px; margin-top:.55rem; }
-.pill { font-size:11px; font-family:var(--fb); font-weight:400; letter-spacing:.04em; color:var(--muted); background:transparent; border:1px solid var(--border2); border-radius:2px; padding:3px 10px; cursor:pointer; transition:color .15s,border-color .15s,background .15s; }
-.pill:hover { color:var(--accent); border-color:var(--accent); background:var(--accent-dim); }
-
-.welcome { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:3rem 2rem; gap:1rem; }
-.wtit { font-family:var(--fd); font-weight:400; font-size:2.4rem; letter-spacing:.03em; line-height:1.15; }
-.wtit span { color:var(--accent); font-style:italic; }
-.wsub { color:var(--muted); font-size:13.5px; font-weight:300; max-width:440px; }
-.fgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:600px; margin-top:.5rem; }
-.fc { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.9rem 1rem; text-align:left; }
-.fc.link-card { cursor:pointer; transition:border-color .2s, background .2s; text-decoration:none; display:block; }
-.fc.link-card:hover { border-color:var(--accent); background:var(--accent-dim); }
-.fc-num { font-family:var(--fd); font-size:1.3rem; color:var(--accent); font-weight:400; margin-bottom:4px; line-height:1; }
-.fct { font-weight:500; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:5px; color:var(--accent); }
-.fcs { color:var(--muted); font-size:12px; font-weight:300; line-height:1.45; }
-.fc-link-label { display:inline-flex; align-items:center; gap:4px; margin-top:7px; font-size:10px; font-family:var(--fm); color:var(--accent); letter-spacing:.06em; text-transform:uppercase; }
-
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:.55rem}
+.pill{font-size:11px;font-family:var(--fb);font-weight:400;letter-spacing:.04em;color:var(--muted);background:transparent;border:1px solid var(--border2);border-radius:2px;padding:3px 10px;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
+.pill:hover{color:var(--accent);border-color:var(--accent);background:var(--adim)}
+.welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3rem 2rem;gap:1rem}
+.wtit{font-family:var(--fd);font-weight:400;font-size:2.4rem;letter-spacing:.03em;line-height:1.15}
+.wtit span{color:var(--accent);font-style:italic}
+.wsub{color:var(--muted);font-size:13.5px;font-weight:300;max-width:440px}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:600px;margin-top:.5rem}
+.fc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;text-align:left}
+.fc.lc{cursor:pointer;transition:border-color .2s,background .2s;text-decoration:none;display:block}
+.fc.lc:hover{border-color:var(--accent);background:var(--adim)}
+.fc-num{font-family:var(--fd);font-size:1.3rem;color:var(--accent);font-weight:400;margin-bottom:4px;line-height:1}
+.fct{font-weight:500;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;color:var(--accent)}
+.fcs{color:var(--muted);font-size:12px;font-weight:300;line-height:1.45}
+.fc-ll{display:inline-flex;align-items:center;gap:4px;margin-top:7px;font-size:10px;font-family:var(--fm);color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
 @media(max-width:640px){
-  .sidebar{display:none} .layout{min-height:0}
-  .msgs{padding:1rem} .iarea{padding:.75rem 1rem 1rem}
-  .fgrid{grid-template-columns:1fr 1fr} .wtit{font-size:1.5rem} .wsub{font-size:12.5px}
+  .sidebar{display:none}.msgs{padding:1rem}.iarea{padding:.75rem 1rem 1rem}
+  .fgrid{grid-template-columns:1fr 1fr}.wtit{font-size:1.5rem}.wsub{font-size:12.5px}
 }
 </style>
 </head>
@@ -125,26 +148,27 @@ header { padding:.9rem 2rem; border-bottom:1px solid var(--border); display:flex
     WooCommerce Produkt CSV Agent
     <span class="badge">Claude AI</span>
   </div>
-  <span class="hint">novooi.com</span>
+  <div class="hdr-right">
+    <div class="tmeter" id="tmeter">
+      <span class="tmeter-lbl">Kontekst</span>
+      <div class="tmeter-wrap"><div class="tmeter-bar" id="tmeter-bar"></div></div>
+      <span class="tmeter-pct" id="tmeter-pct">0%</span>
+    </div>
+    <span class="hint">novooi.com</span>
+  </div>
 </header>
-
 <div class="layout">
   <aside class="sidebar">
     <div class="sb">
       <div class="sbl">Last opp fil</div>
       <div class="uzone" id="dz">
-        <input type="file" id="fi" accept=".pdf,.xlsx,.xls,.csv,.txt" />
+        <input type="file" id="fi" accept=".pdf,.xlsx,.xls,.csv,.txt"/>
         <div class="u-idle">
-          <div class="u-icon">
-            <svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5v8M4.5 5.5l3-3 3 3M2 11v1.5A1 1 0 003 13.5h9a1 1 0 001-1V11" stroke="#6b7c5c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+          <div class="u-icon"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5v8M4.5 5.5l3-3 3 3M2 11v1.5A1 1 0 003 13.5h9a1 1 0 001-1V11" stroke="#6b7c5c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           <div class="u-title">Last opp produktliste</div>
           <div class="u-sub">PDF · Excel · CSV · TXT</div>
         </div>
-        <div class="u-active">
-          <div class="u-dot"></div>
-          <div class="u-name" id="ufn">—</div>
-        </div>
+        <div class="u-active"><div class="u-dot"></div><div class="u-name" id="ufn">—</div></div>
         <div class="u-clr" id="uclr">✕</div>
       </div>
     </div>
@@ -155,59 +179,59 @@ header { padding:.9rem 2rem; border-bottom:1px solid var(--border); display:flex
         <button class="cmd" onclick="ic('/help')"><span class="ctag">/help</span><span class="cdesc">Alle kommandoer</span></button>
         <button class="cmd" onclick="ic('/preview')"><span class="ctag">/preview</span><span class="cdesc">Forhåndsvisning</span></button>
         <button class="cmd" onclick="ic('/validate')"><span class="ctag">/validate</span><span class="cdesc">Sjekk konsistens</span></button>
+        <button class="cmd" onclick="ic('/summary')"><span class="ctag">/summary</span><span class="cdesc">Oppsummering</span></button>
+        <button class="cmd" onclick="ic('/check-prices')"><span class="ctag">/check-prices</span><span class="cdesc">Sjekk priser</span></button>
+        <button class="cmd" onclick="ic('/fill-missing')"><span class="ctag">/fill-missing</span><span class="cdesc">Fyll alt som mangler</span></button>
         <button class="cmd" onclick="ic('/fill-prices')"><span class="ctag">/fill-prices</span><span class="cdesc">Hent priser</span></button>
         <button class="cmd" onclick="ic('/fill-dimensions')"><span class="ctag">/fill-dimensions</span><span class="cdesc">Hent mål</span></button>
+        <button class="cmd" onclick="ic('/changelog')"><span class="ctag">/changelog</span><span class="cdesc">Endringslogg</span></button>
         <button class="cmd" onclick="ic('/export')"><span class="ctag">/export</span><span class="cdesc">Generer CSV</span></button>
         <button class="cmd" onclick="ic('/search-tariff ')"><span class="ctag">/search-tariff</span><span class="cdesc">Finn tolltariff</span></button>
-        <button class="cmd" onclick="nysamtale()"><span class="ctag">/ny</span><span class="cdesc">Ny samtale / tøm historikk</span></button>
+        <button class="cmd" onclick="nysamtale()"><span class="ctag">/ny</span><span class="cdesc">Ny samtale</span></button>
+      </div>
+    </div>
+    <hr class="sbhr"/>
+    <div class="sb">
+      <div class="sbl">Siste nedlastinger</div>
+      <div class="dl-list" id="dl-list"><div class="dl-empty" id="dl-empty">Ingen filer ennå</div></div>
+    </div>
+    <hr class="sbhr"/>
+    <div class="sb">
+      <div class="sbl">Økt</div>
+      <div class="cmds">
+        <button class="cmd" onclick="saveSession()"><span class="ctag">Lagre økt</span><span class="cdesc">Last inn igjen senere</span></button>
+        <button class="cmd" onclick="loadSessionClick()"><span class="ctag">Last inn økt</span><span class="cdesc">Fortsett tidligere</span></button>
+        <input type="file" id="session-fi" accept=".json" style="display:none" onchange="loadSessionFile(event)"/>
       </div>
     </div>
   </aside>
-
   <main class="main">
+    <div class="alert-banner" id="alert-banner">
+      <span id="alert-icon">⚠️</span>
+      <div class="alert-body" id="alert-body"></div>
+      <button class="alert-close" onclick="closeAlert()">✕</button>
+    </div>
+    <div class="prog-wrap" id="prog-wrap">
+      <div class="prog-bg"><div class="prog-fill" id="prog-fill"></div></div>
+      <div class="prog-lbl" id="prog-lbl">Behandler...</div>
+    </div>
     <div class="msgs" id="msgs">
       <div class="welcome" id="wlc">
         <div class="wtit">Konverter kataloger<br/>til <span>WooCommerce CSV</span></div>
         <div class="wsub">Last opp en produktliste eller lim inn en URL. Agenten genererer en importklar CSV med varianter, SKU-er, beskrivelser og tariffkoder.</div>
         <div class="fgrid">
-          <div class="fc">
-            <div class="fc-num">1</div>
-            <div class="fct">Last opp eller lim inn</div>
-            <div class="fcs">Bruk opplastingsboksen til venstre for PDF, Excel eller CSV — eller lim inn en URL til produsentens nettside direkte i chatten.</div>
-          </div>
-          <div class="fc">
-            <div class="fc-num">2</div>
-            <div class="fct">Be om forhåndsvisning</div>
-            <div class="fcs">Skriv <code>/preview</code> for å se parent + én variant før hele filen genereres. Gi tilbakemelding og juster om nødvendig.</div>
-          </div>
-          <div class="fc">
-            <div class="fc-num">3</div>
-            <div class="fct">Generer og eksporter</div>
-            <div class="fcs">Skriv <code>/export</code> for ferdig CSV. Agenten fyller inn SKU-er, beskrivelser, tariffkoder og leveringstid automatisk.</div>
-          </div>
-          <div class="fc">
-            <div class="fc-num">4</div>
-            <div class="fct">Valider før import</div>
-            <div class="fcs">Bruk <code>/validate</code> for å sjekke at alle SKU-er er unike, parent-referanser stemmer og attributter er konsistente.</div>
-          </div>
-          <div class="fc">
-            <div class="fc-num">5</div>
-            <div class="fct">Fyll inn det som mangler</div>
-            <div class="fcs">Agenten varsler om manglende priser eller mål. Bruk <code>/fill-prices</code> eller <code>/fill-dimensions</code> for å hente disse automatisk.</div>
-          </div>
-          <a class="fc link-card" href="https://docs.google.com/document/d/1aM1_p6PtNiiBhyDBNhTb2LHKJQfhfnC39FQE9iJ08C4/edit?usp=sharing" target="_blank">
-            <div class="fc-num">✓</div>
-            <div class="fct">Sjekkliste før publisering</div>
-            <div class="fcs">Gå gjennom alle punktene i importguiden før produktene publiseres i WooCommerce.</div>
-            <div class="fc-link-label">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 9L9 1M9 1H3M9 1V7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Åpne sjekkliste
-            </div>
+          <div class="fc"><div class="fc-num">1</div><div class="fct">Last opp eller lim inn</div><div class="fcs">Bruk opplastingsboksen for PDF, Excel eller CSV — eller lim inn en URL direkte i chatten.</div></div>
+          <div class="fc"><div class="fc-num">2</div><div class="fct">Be om forhåndsvisning</div><div class="fcs">Skriv <code>/preview</code> for å se parent + én variant før hele filen genereres.</div></div>
+          <div class="fc"><div class="fc-num">3</div><div class="fct">Generer og eksporter</div><div class="fcs">Skriv <code>/export</code> for ferdig CSV med SKU-er, beskrivelser og tariffkoder.</div></div>
+          <div class="fc"><div class="fc-num">4</div><div class="fct">Valider og sjekk</div><div class="fcs">Bruk <code>/validate</code> og <code>/check-prices</code> for å sikre at alt er riktig.</div></div>
+          <div class="fc"><div class="fc-num">5</div><div class="fct">Fyll inn det som mangler</div><div class="fcs">Bruk <code>/fill-missing</code> for priser, mål og shipping i én operasjon.</div></div>
+          <a class="fc lc" href="https://docs.google.com/document/d/1aM1_p6PtNiiBhyDBNhTb2LHKJQfhfnC39FQE9iJ08C4/edit?usp=sharing" target="_blank">
+            <div class="fc-num">✓</div><div class="fct">Sjekkliste før publisering</div><div class="fcs">Gå gjennom alle punktene i importguiden før produktene publiseres.</div>
+            <div class="fc-ll"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 9L9 1M9 1H3M9 1V7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Åpne sjekkliste</div>
           </a>
         </div>
       </div>
     </div>
-
     <div class="iarea">
       <div class="irow">
         <textarea id="ci" placeholder="Beskriv produkter, lim inn URL, eller skriv /help…" rows="1" onkeydown="hk(event)" oninput="ar(this)"></textarea>
@@ -218,405 +242,409 @@ header { padding:.9rem 2rem; border-bottom:1px solid var(--border); display:flex
       <div class="pills">
         <span class="pill" onclick="sp('Generer CSV fra denne produktlisten')">Generer CSV</span>
         <span class="pill" onclick="sp('/preview')">Forhåndsvisning</span>
+        <span class="pill" onclick="sp('/summary')">Oppsummering</span>
+        <span class="pill" onclick="sp('/check-prices')">Sjekk priser</span>
+        <span class="pill" onclick="sp('/fill-missing')">Fyll mangler</span>
         <span class="pill" onclick="sp('/export')">Eksporter</span>
         <span class="pill" onclick="sp('/validate')">Valider</span>
-        <span class="pill" onclick="sp('/help')">Hjelp</span>
       </div>
     </div>
   </main>
 </div>
-
 <script>
-// System prompt built directly from Template_Import.csv
-const SP = `Du er en WooCommerce produktimport-agent for Novooi. Du konverterer produktlister, PDF-kataloger og nettsider til en ferdig WooCommerce CSV-importfil.
+var SP = 'Du er en WooCommerce produktimport-agent for Novooi. Du konverterer produktlister, PDF-kataloger og nettsider til en ferdig WooCommerce CSV-importfil.\n\n=== EKSAKT KOLONNESTRUKTUR ===\nKopier denne headeren 100% noeyaktig som foerste linje i CSV:\nID;Type;Name;SKU;Parent;Regular price;Short description for SEO ;Product Description (Norsk);In stock?;Stock;Backorders allowed?;Weight (kg);Length (cm);Width (cm);Height (cm);Meta: _logistra_robots_product_freight_description;Meta: _logistra_robots_product_commodity_code;Meta: _estimated_shipping_text;Meta: _production_type;Position;Attribute 1 name;Attribute 1 value(s);Attribute 1 visible;Attribute 1 global;Attribute 2 name;Attribute 2 value(s);Attribute 2 visible;Attribute 2 global;Meta: _wpcom_is_markdown;Download 1 name;Download 1 URL;Download 2 name;Download 2 URL;Tax status;Date sale price starts;Date sale price ends;Tax class;Published;Is featured?;Visibility in catalog;Allow customer reviews?\n\nGRUNNREGLER: Delimiter semikolon (;). ID alltid tom. Aldri em-dash. Pris aldri med komma.\nPARENT: Type=variable, SKU=unik, Parent=TOM, Regular price=TOM, beskrivelser her.\nVARIANT: Type=variation, SKU=unik, Parent=eksakt SKU til parent (KRITISK).\nENKELT: Type=simple, Parent=TOM, pris her.\nALLE: In stock?=1, Backorders allowed?=1, _wpcom_is_markdown=1, Published=0, Is featured?=0, Visibility=visible, Allow reviews?=1, Tax status=taxable.\n\nSKU: STORE BOKSTAVER, bindestrek. Parent: PRODUSENT-PRODUKT. Variant: PRODUSENT-PRODUKT-VARIANT.\nNAVN: Kun produktnavn. Generiske: legg til kategori (Ami sofa, Pebble bord).\nTAGS: Kun produsentnavn og designernavn. Komma+mellomrom.\nSEO: Engelsk, NOEYAKTIG 120-158 tegn, kun parent/simple.\nBESKRIVELSE: Norsk, 5-8 setninger + punktliste med maal/vekt. Kun parent/simple.\nTARIFF: _freight_description=kort setning. _commodity_code=HS-kode. _estimated_shipping_text=leveringstid (soek aktivt).\nPRODUKSJONSTYPE: Storproduksjon tilgjengelig / Produseres paa bestilling / Begrenset opplag.\nATTRIBUTTER: Parent alle verdier komma+mellomrom. Variant kun en. Visible=1, global=1.\nMANGLER: La felt tom. Skriv OVER blokken: MANGLER: [felt].\n\nKOMMANDOER:\n/help - vis alle kommandoer\n/preview - vis parent + en variant\n/validate - sjekk SKU, Parent-refs, attributter\n/summary - oppsummering: antall produkter/varianter, mangler, typer\n/check-prices - flagg manglende/nullpriser og urealistiske priser\n/fill-missing - kjoer fill-prices + fill-dimensions + shipping i en operasjon\n/fill-prices - hent manglende priser\n/fill-dimensions - hent maal/vekt\n/changelog - logg over endringer i samtalen\n/export - generer ferdig CSV\n/search-tariff [navn] - soek HS-kode\n\nOUTPUT: Lever CSV i kodeblokk: ```csv ... ```\nSvar paa norsk.';
 
-=== EKSAKT KOLONNESTRUKTUR ===
-Kopier denne headeren 100% nøyaktig som første linje i CSV:
-ID;Type;Name;SKU;Parent;Regular price;Short description for SEO ;Product Description (Norsk);In stock?;Stock;Backorders allowed?;Weight (kg);Length (cm);Width (cm);Height (cm);Meta: _logistra_robots_product_freight_description;Meta: _logistra_robots_product_commodity_code;Meta: _estimated_shipping_text;Meta: _production_type;Position;Attribute 1 name;Attribute 1 value(s);Attribute 1 visible;Attribute 1 global;Attribute 2 name;Attribute 2 value(s);Attribute 2 visible;Attribute 2 global;Meta: _wpcom_is_markdown;Download 1 name;Download 1 URL;Download 2 name;Download 2 URL;Tax status;Date sale price starts;Date sale price ends;Tax class;Published;Is featured?;Visibility in catalog;Allow customer reviews?
-
-Merk: "Short description for SEO " har et mellomrom på slutten — dette er en del av kolonnenavnet.
-
-GRUNNREGLER:
-- Delimiter: semikolon (;) — alltid, ingen unntak
-- ID-kolonnen: alltid tom (aldri fyll inn ID)
-- Aldri bruk em-dash (–), bruk bindestrek (-) om nødvendig
-- Pris skrives aldri med komma (bruk 46990 eller 46990.00, ikke 46.990 eller 46,990)
-
-=== PRODUKTSTRUKTUR MED VARIANTER ===
-
-PARENT-rad (produkter med varianter):
-- ID = tom
-- Type = variable
-- Name = produktnavn
-- SKU = unik kode (PRODUSENT-PRODUKT)
-- Parent = TOM (viktig: alltid tom på parent)
-- Regular price = TOM (pris kun på variantrader)
-- Short description for SEO = engelske SEO-tekst, 120-158 tegn nøyaktig
-- Product Description (Norsk) = norsk beskrivelse, 5-8 setninger + punktliste
-- Attribute 1 value(s) = ALLE mulige verdier: "Svart, Hvit, Grå"
-- In stock? = 1, Backorders allowed? = 1
-
-VARIANT-rad:
-- ID = tom
-- Type = variation
-- Name = IDENTISK som parent (ikke legg til farge/størrelse i Name)
-- SKU = unik kode (PRODUSENT-PRODUKT-VARIANT)
-- Parent = eksakt SKU til parent-raden — DETTE ER KRITISK. Feil her gir separate produkter.
-- Regular price = pris for denne varianten
-- Short description for SEO = TOM
-- Product Description (Norsk) = TOM (maks 1 setning ved viktige forskjeller)
-- Attribute 1 value(s) = kun én verdi: "Svart"
-
-ALLE RADER (defaults):
-- In stock? = 1
-- Backorders allowed? = 1
-- Meta: _wpcom_is_markdown = 1
-- Published = 0
-- Is featured? = 0
-- Visibility in catalog = visible
-- Allow customer reviews? = 1
-- Position = tom
-- Download-felter = tomme
-- Tax status = taxable
-- Tax class = tom
-- Date sale price starts/ends = tomme
-
-=== ENKELT PRODUKT (ingen varianter) ===
-- Type = simple
-- Parent = TOM
-- Regular price = pris her
-
-=== EKSEMPEL FRA DIN TEMPLATE_IMPORT.CSV ===
-Parent:
-;variable;Expand dining table;SKELAB-EXPAND-TABLE;;;With its curved apron and slightly angled legs...;Elegant og uttrekkbart...;1;;1;68;204;94;12;Wooden furniture for dining rooms;94036010;3 - 6 uker;Produseres på bestilling;;Material;Black painted oak, Light oiled oak, Smoked oak;1;1;Size;200 x 90, 250 x 90;1;1;1;;;;;;;;;;0;0;visible;1
-
-Variant:
-;variation;Expand dining table;SKELAB-EXPAND-200-SORT;SKELAB-EXPAND-TABLE;46990;;;1;;1;68;204;94;12;Wooden furniture for dining rooms;94036010;3 - 6 uker;Produseres på bestilling;;Material;Black painted oak;1;1;Size;200 x 90;1;1;1;;;;;;;;;;0;0;visible;1
-
-=== SKU ===
-- Format: STORE BOKSTAVER, bindestrek, ingen mellomrom
-- Parent: PRODUSENT-PRODUKT
-- Variant: PRODUSENT-PRODUKT-VARIANT
-- Alle SKU-er må være unike
-
-=== NAVN ===
-- Kun produktnavn, ingen produsentprefiks
-- For generiske navn: legg til kategori (f.eks. "Silla stol", "Ami sofa")
-- Variantnavn = identisk med parent
-
-=== TAGS ===
-- Kun produsentnavn og/eller designernavn
-- Komma + mellomrom: "Muuto, Cecilie Manz"
-
-=== BESKRIVELSER ===
-Short description for SEO (kun parent/simple):
-- Engelsk
-- NØYAKTIG 120-158 tegn
-
-Product Description (Norsk) (kun parent/simple):
-- Norsk, faktabasert, 5-8 setninger
-- Punktliste med mål, vekt og viktig info etterpå
-- Ikke nevn manglende informasjon
-
-=== TARIFF OG FRAKT ===
-- Meta: _logistra_robots_product_freight_description = kort setning, f.eks. "Polstret stol med metallramme"
-- Meta: _logistra_robots_product_commodity_code = HS-kode, f.eks. 94016100
-- Meta: _estimated_shipping_text = leveringstid, f.eks. "14 - 21 dager" eller "8 - 12 uker"
-  Søk aktivt på produsentens nettside. Oppgi kilden i svaret (ikke i CSV). EKSTREMT VIKTIG.
-
-=== PRODUKSJONSTYPE ===
-- "Storproduksjon tilgjengelig", "Produseres på bestilling" eller "Begrenset opplag"
-- Bruk "Storproduksjon tilgjengelig" hvis ukjent
-
-=== ATTRIBUTTER ===
-- Parent: alle verdier med komma+mellomrom: "Svart, Hvit"
-- Variant: kun én verdi: "Svart"
-- Aldri bruk komma inne i én verdi
-- Attribute visible = 1, global = 1
-
-=== MANGLENDE INFO ===
-La felt stå tom i CSV. Skriv OVER csv-blokken:
-⚠️ MANGLER: [felt] må fylles inn manuelt.
-
-=== KOMMANDOER ===
-/help — vis alle kommandoer
-/preview — vis parent + én variant
-/validate — sjekk SKU, Parent-referanser, attributter
-/fill-prices — hent priser fra nett
-/fill-dimensions — hent mål/vekt fra nett
-/search-tariff [navn] — søk HS-kode
-/export — generer ferdig CSV
-
-=== OUTPUT ===
-Lever CSV i kodeblokk med ID;Type; som første kolonner i headeren:
-\`\`\`csv
-ID;Type;Name;...
-;variable;...
-;variation;...
-\`\`\`
-
-Svar på norsk med mindre brukeren skriver et annet språk.`;
-
-const WU = 'https://woocommerce-import2.marcus-aas-mekiassen.workers.dev';
-let hist = [], upFile = null, tmr = null, t0 = null;
-
-// ── TOKEN SAFETY ──
-const MAX_HIST_CHARS = 600000;
+var WU = 'https://woocommerce-import2.marcus-aas-mekiassen.workers.dev';
+var hist = [], upFile = null, tmr = null, t0 = null;
+var dlHistory = [], changeLog = [], turnCount = 0;
+var MAX_HIST = 600000;
+var progTimer = null;
 
 function histSize() {
-  return hist.reduce((s, m) => {
-    const c = m.content;
+  return hist.reduce(function(s, m) {
+    var c = m.content;
     if (typeof c === 'string') return s + c.length;
-    if (Array.isArray(c)) return s + c.map(b => (b.text||'').length + (b.source?.data||'').length).reduce((a,b)=>a+b,0);
+    if (Array.isArray(c)) return s + c.reduce(function(a, b) {
+      return a + (b.text || '').length + ((b.source && b.source.data) || '').length;
+    }, 0);
     return s;
   }, 0);
 }
 
 function trimHistory() {
-  while (histSize() > MAX_HIST_CHARS && hist.length > 2) hist.shift();
+  while (histSize() > MAX_HIST && hist.length > 2) { hist.shift(); }
 }
 
-// After Claude replies to a PDF message, swap out the raw base64 blob
-// with a lightweight placeholder — the model has already read the content.
 function compressPdfInHistory() {
-  for (let i = 0; i < hist.length; i++) {
-    const m = hist[i];
+  var i, m, hasPdf, tb;
+  for (i = 0; i < hist.length; i++) {
+    m = hist[i];
     if (m.role === 'user' && Array.isArray(m.content)) {
-      const hasPdf = m.content.some(b => b.type === 'document' && b.source?.media_type === 'application/pdf');
+      hasPdf = m.content.some(function(b) {
+        return b.type === 'document' && b.source && b.source.media_type === 'application/pdf';
+      });
       if (hasPdf) {
-        const textBlock = m.content.find(b => b.type === 'text');
-        hist[i] = { role: 'user', content: (textBlock?.text || '') + '\n[PDF allerede lest — base64 fjernet fra kontekst for å spare plass]' };
+        tb = m.content.find(function(b) { return b.type === 'text'; });
+        hist[i] = { role: 'user', content: (tb ? tb.text : '') + '\n[PDF lest]' };
       }
     }
   }
 }
 
-// File upload
-const dz = document.getElementById('dz');
-const fi = document.getElementById('fi');
-const ufn = document.getElementById('ufn');
-const uclr = document.getElementById('uclr');
-
-dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('over');});
-dz.addEventListener('dragleave', ()=>dz.classList.remove('over'));
-dz.addEventListener('drop', e=>{e.preventDefault();dz.classList.remove('over');if(e.dataTransfer.files[0])pf(e.dataTransfer.files[0]);});
-fi.addEventListener('change', e=>{if(e.target.files[0])pf(e.target.files[0]);});
-uclr.addEventListener('click', e=>{e.preventDefault();e.stopPropagation();rf();});
-
-function pf(f){
-  ufn.textContent=f.name; dz.classList.add('has-file');
-  const r=new FileReader();
-  if(f.type==='application/pdf'){r.readAsDataURL(f);r.onload=()=>{upFile={type:'pdf',data:r.result.split(',')[1],name:f.name};};}
-  else{r.readAsText(f);r.onload=()=>{upFile={type:'text',data:r.result,name:f.name};};}
+function updateTokenMeter() {
+  var pct = Math.min(100, Math.round(histSize() / MAX_HIST * 100));
+  var bar = document.getElementById('tmeter-bar');
+  var pctEl = document.getElementById('tmeter-pct');
+  var meter = document.getElementById('tmeter');
+  if (hist.length === 0) { meter.style.display = 'none'; return; }
+  meter.style.display = 'flex';
+  bar.style.width = pct + '%';
+  pctEl.textContent = pct + '%';
+  bar.className = 'tmeter-bar' + (pct > 80 ? ' danger' : pct > 55 ? ' warn' : '');
 }
-function rf(){upFile=null;fi.value='';ufn.textContent='—';dz.classList.remove('has-file');}
 
-// Timer
-function fmtElapsed(s){
-  if(s<60)return Math.round(s)+' sek';
-  const m=Math.floor(s/60),r=Math.round(s%60);
-  return r>0?m+' min '+r+' sek':m+' min';
+function showAlert(type, html) {
+  var b = document.getElementById('alert-banner');
+  document.getElementById('alert-body').innerHTML = html;
+  document.getElementById('alert-icon').textContent = type === 'danger' ? '🚨' : type === 'info' ? 'ℹ️' : '⚠️';
+  b.className = 'alert-banner ' + type;
 }
-function startTmr(id){
-  t0=Date.now();
-  tmr=setInterval(()=>{const el=document.getElementById(id);if(el)el.textContent=fmtElapsed((Date.now()-t0)/1000);},300);
-}
-function stopTmr(){clearInterval(tmr);return fmtElapsed((Date.now()-t0)/1000);}
 
-function estimateTime(text,hasFile){
-  const t=text.toLowerCase(),w=text.trim().split(/\s+/).length;
-  if(t.includes('/help')) return '~5 sekunder';
-  if(t.includes('/validate')) return '~15 sekunder';
-  if(t.includes('/preview')) return '~30 sekunder';
-  if(t.includes('/search-tariff')) return '~20 sekunder';
-  if(t.includes('/fill-prices')||t.includes('/fill-dimensions')) return '~45 sekunder';
-  if(t.includes('/export')||t.includes('generer csv')||t.includes('lag csv')){
-    return hasFile?'~2-4 minutter':'~1-2 minutter';
+function closeAlert() {
+  document.getElementById('alert-banner').className = 'alert-banner';
+}
+
+function startProgress(label) {
+  var wrap = document.getElementById('prog-wrap');
+  var fill = document.getElementById('prog-fill');
+  document.getElementById('prog-lbl').textContent = label || 'Behandler...';
+  wrap.classList.add('active');
+  fill.style.width = '0%';
+  var p = 0;
+  clearInterval(progTimer);
+  progTimer = setInterval(function() {
+    p = p < 30 ? p + 2 : p < 60 ? p + 0.8 : p < 85 ? p + 0.3 : p;
+    fill.style.width = p + '%';
+  }, 300);
+}
+
+function stopProgress() {
+  clearInterval(progTimer);
+  var fill = document.getElementById('prog-fill');
+  fill.style.width = '100%';
+  setTimeout(function() {
+    document.getElementById('prog-wrap').classList.remove('active');
+    fill.style.width = '0%';
+  }, 600);
+}
+
+function addDownload(csv, label) {
+  var now = new Date();
+  var hh = now.getHours().toString().padStart(2, '0');
+  var mm = now.getMinutes().toString().padStart(2, '0');
+  var fname = 'novooi-' + now.toISOString().slice(0, 10) + '-' + now.getTime().toString().slice(-4) + '.csv';
+  var entry = { csv: csv, fname: fname, label: label || fname, time: hh + ':' + mm };
+  dlHistory.unshift(entry);
+  if (dlHistory.length > 5) dlHistory.pop();
+  renderDlList();
+  return entry;
+}
+
+function renderDlList() {
+  var list = document.getElementById('dl-list');
+  var empty = document.getElementById('dl-empty');
+  if (dlHistory.length === 0) { if (empty) empty.style.display = ''; return; }
+  if (empty) empty.style.display = 'none';
+  list.innerHTML = '<div class="dl-empty" style="display:none"></div>';
+  dlHistory.forEach(function(e) {
+    var a = document.createElement('a');
+    a.className = 'dl-item'; a.href = '#';
+    a.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v5M2.5 4l2.5 2.5L7.5 4M1 8v1.5h8V8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="dl-item-name">' + e.label + '</span><span class="dl-item-time">' + e.time + '</span>';
+    a.onclick = (function(entry) { return function(ev) { ev.preventDefault(); triggerDownload(entry.csv, entry.fname); }; })(e);
+    list.appendChild(a);
+  });
+}
+
+function triggerDownload(csv, fname) {
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  a.download = fname;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+function saveSession() {
+  if (hist.length === 0) { showAlert('warn', 'Ingen samtale å lagre ennå.'); return; }
+  var data = JSON.stringify({ hist: hist, dlHistory: dlHistory, changeLog: changeLog, turnCount: turnCount, savedAt: new Date().toISOString() });
+  var a = document.createElement('a');
+  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(data);
+  a.download = 'novooi-session-' + new Date().toISOString().slice(0, 16).replace('T', '-') + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showAlert('info', 'Økt lagret!');
+}
+
+function loadSessionClick() { document.getElementById('session-fi').click(); }
+
+function loadSessionFile(e) {
+  var f = e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(ev) {
+    try {
+      var data = JSON.parse(ev.target.result);
+      hist = data.hist || []; dlHistory = data.dlHistory || [];
+      changeLog = data.changeLog || []; turnCount = data.turnCount || 0;
+      renderDlList(); updateTokenMeter();
+      showAlert('info', 'Økt lastet inn. ' + hist.length + ' meldinger.');
+      hw();
+    } catch(err) { showAlert('danger', 'Ugyldig fil.'); }
+  };
+  r.readAsText(f); e.target.value = '';
+}
+
+var dz = document.getElementById('dz');
+var fi = document.getElementById('fi');
+dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', function() { dz.classList.remove('over'); });
+dz.addEventListener('drop', function(e) {
+  e.preventDefault(); dz.classList.remove('over');
+  if (e.dataTransfer.files[0]) pf(e.dataTransfer.files[0]);
+});
+fi.addEventListener('change', function(e) { if (e.target.files[0]) pf(e.target.files[0]); });
+document.getElementById('uclr').addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); rf(); });
+
+function pf(f) {
+  document.getElementById('ufn').textContent = f.name; dz.classList.add('has-file');
+  var r = new FileReader();
+  if (f.type === 'application/pdf') {
+    r.readAsDataURL(f);
+    r.onload = function() { upFile = { type: 'pdf', data: r.result.split(',')[1], name: f.name }; };
+  } else {
+    r.readAsText(f);
+    r.onload = function() { upFile = { type: 'text', data: r.result, name: f.name }; };
   }
-  if(hasFile) return '~1-3 minutter';
-  if(t.includes('http')||t.includes('www.')||t.includes('nettside')||t.includes('url')) return '~45 sekunder';
-  if(w<6) return '~10 sekunder';
-  if(w<15) return '~20 sekunder';
-  return '~30 sekunder';
 }
 
-// Helpers
-function ic(c){const i=document.getElementById('ci');i.value=c;i.focus();ar(i);}
-function sp(c){const i=document.getElementById('ci');i.value=c;i.focus();ar(i);}
-function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}
-function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
-function hw(){const w=document.getElementById('wlc');if(w)w.remove();}
-
-function nysamtale(){
-  if(!confirm('Start ny samtale? Historikken tømmes.')) return;
-  hist = [];
-  upFile = null;
-  document.getElementById('ufn').textContent = '—';
-  document.getElementById('dz').classList.remove('has-file');
-  document.getElementById('fi').value = '';
-  const msgs = document.getElementById('msgs');
-  msgs.innerHTML = '';
-  const wlc = document.createElement('div');
-  wlc.className = 'welcome';
-  wlc.id = 'wlc';
-  wlc.innerHTML = msgs.dataset.welcome || '';
-  // Simpler: just reload welcome state
-  location.reload();
+function rf() {
+  upFile = null; fi.value = '';
+  document.getElementById('ufn').textContent = '—'; dz.classList.remove('has-file');
 }
 
-function fmt(t){
-  let h=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  h=h.replace(/`([^`\n]+)`/g,'<code>$1</code>');
-  h=h.replace(/```(?:csv)?\n?([\s\S]+?)```/g,'<pre>$1</pre>');
-  h=h.replace(/\n/g,'<br/>');
+function fmtT(s) {
+  if (s < 60) return Math.round(s) + ' sek';
+  var m = Math.floor(s / 60), rest = Math.round(s % 60);
+  return rest > 0 ? m + ' min ' + rest + ' sek' : m + ' min';
+}
+function startTmr(id) { t0 = Date.now(); tmr = setInterval(function() { var el = document.getElementById(id); if (el) el.textContent = fmtT((Date.now() - t0) / 1000); }, 300); }
+function stopTmr() { clearInterval(tmr); return fmtT((Date.now() - t0) / 1000); }
+
+function estTime(text, hasFile) {
+  var t = text.toLowerCase(), w = text.trim().split(/\s+/).length;
+  if (t.indexOf('/help') === 0) return '~5 sek';
+  if (t.indexOf('/changelog') === 0 || t.indexOf('/summary') === 0) return '~10 sek';
+  if (t.indexOf('/validate') === 0 || t.indexOf('/check-prices') === 0) return '~20 sek';
+  if (t.indexOf('/preview') === 0) return '~30 sek';
+  if (t.indexOf('/search-tariff') === 0) return '~20 sek';
+  if (t.indexOf('/fill-missing') === 0) return '~2-4 min';
+  if (t.indexOf('/fill-prices') === 0 || t.indexOf('/fill-dimensions') === 0) return '~45 sek';
+  if (t.indexOf('/export') === 0 || t.indexOf('generer csv') !== -1) return hasFile ? '~2-4 min' : '~1-2 min';
+  if (hasFile) return '~1-3 min';
+  if (t.indexOf('http') !== -1 || t.indexOf('www.') !== -1) return '~45 sek';
+  if (w < 6) return '~10 sek'; if (w < 15) return '~20 sek';
+  return '~30 sek';
+}
+
+function ic(c) { var i = document.getElementById('ci'); i.value = c; i.focus(); ar(i); }
+function sp(c) { var i = document.getElementById('ci'); i.value = c; i.focus(); ar(i); }
+function ar(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 140) + 'px'; }
+function hk(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }
+function hw() { var w = document.getElementById('wlc'); if (w) w.remove(); }
+
+function nysamtale() {
+  if (hist.length > 0 && !confirm('Start ny samtale? Historikken tømmes.')) return;
+  hist = []; upFile = null; dlHistory = []; changeLog = []; turnCount = 0;
+  rf(); closeAlert(); renderDlList(); updateTokenMeter(); location.reload();
+}
+
+function buildCsvTable(csvText) {
+  var lines = csvText.trim().split('\n');
+  if (lines.length < 2) return null;
+  var headers = lines[0].split(';');
+  var rows = lines.slice(1).map(function(l) { return l.split(';'); });
+  var showCols = ['Type','Name','SKU','Parent','Regular price','Short description for SEO ','Weight (kg)','Length (cm)','Width (cm)','Height (cm)','Meta: _estimated_shipping_text','Meta: _logistra_robots_product_commodity_code','Attribute 1 name','Attribute 1 value(s)','Attribute 2 name','Attribute 2 value(s)'];
+  var colIdx = [];
+  showCols.forEach(function(c) {
+    var idx = headers.findIndex(function(h) { return h.trim() === c.trim(); });
+    if (idx >= 0) colIdx.push(idx);
+  });
+  var visH = colIdx.map(function(i) { return headers[i]; });
+  var wrap = document.createElement('div'); wrap.className = 'csv-table-wrap';
+  var tbl = document.createElement('table'); tbl.className = 'csv-table';
+  var thead = document.createElement('thead'); var hrow = document.createElement('tr');
+  visH.forEach(function(h) { var th = document.createElement('th'); th.textContent = h.trim(); hrow.appendChild(th); });
+  thead.appendChild(hrow); tbl.appendChild(thead);
+  var tbody = document.createElement('tbody');
+  var typeColIdx = headers.findIndex(function(h) { return h === 'Type'; });
+  rows.forEach(function(row, ri) {
+    var tr = document.createElement('tr');
+    var typeVal = (row[typeColIdx] || '').trim();
+    colIdx.forEach(function(ci, vi) {
+      var td = document.createElement('td');
+      var val = (row[ci] || '').trim();
+      td.textContent = val; td.title = val;
+      if (vi === 0) { td.className = typeVal === 'variable' ? 'tv' : typeVal === 'variation' ? 'tvar' : ''; }
+      if (!val && visH[vi] && visH[vi].toLowerCase().indexOf('price') !== -1) td.className = 'miss';
+      td.contentEditable = 'true';
+      td.addEventListener('blur', (function(r2, c2) { return function() { if (rows[r2]) rows[r2][c2] = td.textContent; }; })(ri, ci));
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody); wrap.appendChild(tbl);
+  var dlBtn = document.createElement('button'); dlBtn.className = 'dl-btn sec'; dlBtn.textContent = '↓ Last ned redigert';
+  dlBtn.onclick = function() {
+    var csv = [headers].concat(rows).map(function(r) { return r.join(';'); }).join('\n');
+    var e2 = addDownload(csv, 'redigert'); triggerDownload(csv, e2.fname);
+  };
+  wrap.appendChild(dlBtn);
+  return { wrap: wrap, headers: headers, rows: rows };
+}
+
+function fmt(t) {
+  var h = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  h = h.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  h = h.replace(/```(?:csv)?\n?([\s\S]+?)```/g, '<pre>$1</pre>');
+  h = h.replace(/\n/g, '<br/>');
   return h;
 }
 
-function addMsg(role,text){
+function detectWarnings(text) {
+  var re = /MANGLER[^\n<]{0,120}/gi, m, found = [];
+  while ((m = re.exec(text)) !== null) found.push(m[0]);
+  if (found.length > 0) showAlert('warn', '<strong>Manglende felt:</strong> ' + found.slice(0, 3).join(' · '));
+  else closeAlert();
+}
+
+function addMsg(role, text) {
   hw();
-  const c=document.getElementById('msgs');
-  const w=document.createElement('div');
-  w.className='msg '+(role==='user'?'u':'a');
-  const av=document.createElement('div');
-  av.className='av '+(role==='user'?'me':'ai');
-  av.textContent=role==='user'?'Deg':'AI';
-  const col=document.createElement('div');
-  col.className='mcol';
-  const b=document.createElement('div');
-  b.className='bbl';
-  b.innerHTML=fmt(text);
-  col.appendChild(b);
-  w.appendChild(av);w.appendChild(col);
-  c.appendChild(w);c.scrollTop=c.scrollHeight;
-  return{b,col};
+  var c = document.getElementById('msgs');
+  var w = document.createElement('div'); w.className = 'msg ' + (role === 'user' ? 'u' : 'a');
+  var av = document.createElement('div'); av.className = 'av ' + (role === 'user' ? 'me' : 'ai');
+  av.textContent = role === 'user' ? 'Deg' : 'AI';
+  var col = document.createElement('div'); col.className = 'mcol';
+  var b = document.createElement('div'); b.className = 'bbl'; b.innerHTML = fmt(text);
+  col.appendChild(b); w.appendChild(av); w.appendChild(col); c.appendChild(w);
+  c.scrollTop = c.scrollHeight;
+  return { b: b, col: col };
 }
 
-function addMeta(col,txt){
-  const m=document.createElement('div');
-  m.className='mmeta';m.textContent=txt;col.appendChild(m);
+function addMeta(col, txt) {
+  var m = document.createElement('div'); m.className = 'mmeta'; m.textContent = txt; col.appendChild(m);
 }
 
-function showTyping(estimate){
+function showTyping(est) {
   hw();
-  const c=document.getElementById('msgs');
-  const w=document.createElement('div');
-  w.className='msg a';w.id='typ';
-  const av=document.createElement('div');av.className='av ai';av.textContent='AI';
-  const col=document.createElement('div');col.className='mcol';
-  const b=document.createElement('div');b.className='bbl';
-  b.innerHTML=`<div class="trow">
-    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-    <div class="est-wrap">
-      <span class="est-label" id="est-label">Estimert: ${estimate}</span>
-      <span class="tms">Brukt: <span id="ltmr">0 sek</span></span>
-    </div>
-  </div>`;
-  col.appendChild(b);w.appendChild(av);w.appendChild(col);
-  c.appendChild(w);c.scrollTop=c.scrollHeight;
-  startTmr('ltmr');
+  var c = document.getElementById('msgs');
+  var w = document.createElement('div'); w.className = 'msg a'; w.id = 'typ';
+  var av = document.createElement('div'); av.className = 'av ai'; av.textContent = 'AI';
+  var col = document.createElement('div'); col.className = 'mcol';
+  var b = document.createElement('div'); b.className = 'bbl';
+  b.innerHTML = '<div class="trow"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="est-wrap"><span class="est-label">Estimert: ' + est + '</span><span class="tms">Brukt: <span id="ltmr">0 sek</span></span></div></div>';
+  col.appendChild(b); w.appendChild(av); w.appendChild(col); c.appendChild(w);
+  c.scrollTop = c.scrollHeight; startTmr('ltmr');
 }
 
-function rmTyping(){const s=stopTmr();const t=document.getElementById('typ');if(t)t.remove();return s;}
+function rmTyping() { var s = stopTmr(); var t = document.getElementById('typ'); if (t) t.remove(); return s; }
 
-function offerCSV(text,col){
-  // Match CSV block starting with the header
-  const m=text.match(/```(?:csv)?\n?(ID;Type;[\s\S]+?)```/i);
-  if(!m)return;
-  const csv=m[1].trim();
-  const a=document.createElement('a');
-  a.className='dl-btn';
-  a.innerHTML='<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7M3.5 6l3 3 3-3M1 10v1.5A1 1 0 002 12.5h9a1 1 0 001-1V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Last ned CSV';
-  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-  a.download='novooi-woocommerce-import.csv';
-  const b=col.querySelector('.bbl');
-  if(b)b.appendChild(a);
+function offerCSV(text, col) {
+  var m = text.match(/```(?:csv)?\n?(ID;Type;[\s\S]+?)```/i);
+  if (!m) return;
+  var csvText = m[1].trim();
+  var b = col.querySelector('.bbl');
+  if (!b) return;
+  var pre = b.querySelector('pre');
+  if (pre) {
+    var toggle = document.createElement('button'); toggle.className = 'csv-toggle'; toggle.textContent = '▼ Vis rå CSV';
+    var shown = false; pre.style.display = 'none';
+    toggle.onclick = function() { shown = !shown; pre.style.display = shown ? '' : 'none'; toggle.textContent = shown ? '▲ Skjul rå CSV' : '▼ Vis rå CSV'; };
+    b.insertBefore(toggle, pre);
+    var tblResult = buildCsvTable(csvText);
+    if (tblResult) b.insertBefore(tblResult.wrap, pre);
+  }
+  var entry = addDownload(csvText);
+  var a = document.createElement('a'); a.className = 'dl-btn'; a.href = '#';
+  a.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7M3.5 6l3 3 3-3M1 10v1.5A1 1 0 002 12.5h9a1 1 0 001-1V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Last ned CSV';
+  a.onclick = (function(e2) { return function(ev) { ev.preventDefault(); triggerDownload(e2.csv, e2.fname); }; })(entry);
+  b.appendChild(a);
+  detectWarnings(text);
 }
 
-async function send(){
-  const inp=document.getElementById('ci');
-  const text=inp.value.trim();
-  if(!text)return;
-  inp.value='';ar(inp);
-  document.getElementById('sb').disabled=true;
+async function send() {
+  var inp = document.getElementById('ci');
+  var text = inp.value.trim();
+  if (!text) return;
+  inp.value = ''; ar(inp);
+  document.getElementById('sb').disabled = true;
+  turnCount++;
+  addMsg('user', text);
 
-  addMsg('user',text);
-
-  let content;
-  if(upFile){
-    if(upFile.type==='pdf'){
-      content=[{type:'document',source:{type:'base64',media_type:'application/pdf',data:upFile.data}},{type:'text',text:text+'\n\n[Fil: '+upFile.name+']'}];
+  var content;
+  if (upFile) {
+    if (upFile.type === 'pdf') {
+      content = [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: upFile.data } },
+        { type: 'text', text: text + '\n\n[Fil: ' + upFile.name + ']' }
+      ];
     } else {
-      content=[{type:'text',text:text+'\n\n--- Innhold fra '+upFile.name+' ---\n'+upFile.data}];
+      content = [{ type: 'text', text: text + '\n\n--- Innhold fra ' + upFile.name + ' ---\n' + upFile.data }];
     }
-    upFile=null;
-    document.getElementById('ufn').textContent='—';
-    document.getElementById('dz').classList.remove('has-file');
+    changeLog.push({ turn: turnCount, action: 'Fil: ' + upFile.name });
+    upFile = null; rf();
   } else {
-    content=text;
+    content = text;
   }
 
-  hist.push({role:'user',content});
-  const est=estimateTime(text, Array.isArray(content));
+  if (text.charAt(0) === '/') changeLog.push({ turn: turnCount, action: 'Kommando: ' + text.split(' ')[0] });
+  hist.push({ role: 'user', content: content });
+
+  var est = estTime(text, Array.isArray(content));
   showTyping(est);
+  startProgress(text.indexOf('/fill-missing') === 0 ? 'Søker etter manglende data...' : text.indexOf('/export') === 0 ? 'Genererer CSV...' : 'Behandler...');
 
   try {
-    const res=await fetch(WU,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:8000,
-        system:SP,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:hist
-      })
+    var res = await fetch(WU, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8000, system: SP, messages: hist })
     });
-    const data=await res.json();
-    const elapsed=rmTyping();
+    var data = await res.json();
+    var elapsed = rmTyping(); stopProgress();
 
-    if(data.error){
-      let errMsg = '⚠️ API-feil: ' + data.error.message;
-      if(data.error.message && data.error.message.includes('prompt is too long')) {
-        errMsg = '⚠️ Meldingen er for lang for Claude å håndtere i én omgang.\n\n'
-          + '**Hva du kan gjøre:**\n'
-          + '• Start en ny samtale og last opp bare de produktene du trenger nå\n'
-          + '• Del opp store prislister i mindre deler (f.eks. 10–20 produkter om gangen)\n'
-          + '• For PDF-er: kopier tekst fra kun relevante sider og lim inn direkte\n\n'
-          + 'Historikken er nå tømt automatisk — du kan laste opp en ny, mindre fil.';
-        hist = [];
-        upFile = null;
-        document.getElementById('ufn').textContent = '—';
-        document.getElementById('dz').classList.remove('has-file');
+    if (data.error) {
+      var errMsg = 'API-feil: ' + data.error.message;
+      if (data.error.message && data.error.message.indexOf('prompt is too long') !== -1) {
+        errMsg = 'Meldingen er for lang. Del prislisten i mindre batcher (10-20 produkter). Historikken er tømt — last opp på nytt.';
+        hist = []; rf(); showAlert('danger', 'Kontekstgrense nådd — historikk tømt automatisk.');
       }
-      addMsg('assistant', errMsg);
-      document.getElementById('sb').disabled=false;
-      return;
+      addMsg('assistant', '⚠️ ' + errMsg);
+      document.getElementById('sb').disabled = false; return;
     }
 
-    const fullText=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
-    hist.push({role:'assistant',content:data.content});
+    var fullText = (data.content || []).filter(function(b) { return b.type === 'text'; }).map(function(b) { return b.text; }).join('\n');
+    hist.push({ role: 'assistant', content: data.content });
+    compressPdfInHistory(); trimHistory(); updateTokenMeter();
 
-    // After Claude has read the PDF, replace it with a small placeholder to free up tokens
-    compressPdfInHistory();
-    // Trim oldest turns if history is getting too large
-    trimHistory();
+    var result = addMsg('assistant', fullText);
+    var histKb = Math.round(histSize() / 1024);
+    var usageStr = data.usage ? ' · ' + data.usage.output_tokens + ' tokens · ~' + histKb + 'k tegn' : '';
+    addMeta(result.col, 'Svartid: ' + elapsed + usageStr);
+    offerCSV(fullText, result.col);
+    if (fullText.indexOf('ID;Type;') !== -1) changeLog.push({ turn: turnCount, action: 'CSV generert' });
 
-    const {b,col}=addMsg('assistant',fullText);
-    // Show token usage and a warning if history is getting large
-    const histKb = Math.round(histSize() / 1024);
-    const usageStr = data.usage ? ` · ${data.usage.output_tokens} tokens ut · historikk ~${histKb}k tegn` : '';
-    addMeta(col,'Svartid: '+elapsed+usageStr);
-    if (histSize() > 400000) {
-      addMeta(col, '⚠️ Historikken er stor — vurder å starte ny samtale (/ny) for å unngå tokenfeil');
-    }
-    offerCSV(fullText,col);
-
-  } catch(err){
-    rmTyping();
-    addMsg('assistant','⚠️ Feil: '+err.message);
+  } catch(err) {
+    rmTyping(); stopProgress();
+    addMsg('assistant', '⚠️ Feil: ' + err.message);
+    showAlert('danger', 'Nettverksfeil — sjekk tilkoblingen.');
   }
-
-  document.getElementById('sb').disabled=false;
+  document.getElementById('sb').disabled = false;
   document.getElementById('ci').focus();
 }
 </script>
