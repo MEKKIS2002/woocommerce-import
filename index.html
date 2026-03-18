@@ -542,19 +542,21 @@ async function send(){
   addMsg('user',text);
 
   let content;
-  if(upFile&&hist.length===0){
+  if(upFile){
     if(upFile.type==='pdf'){
       content=[{type:'document',source:{type:'base64',media_type:'application/pdf',data:upFile.data}},{type:'text',text:text+'\n\n[Fil: '+upFile.name+']'}];
     } else {
       content=[{type:'text',text:text+'\n\n--- Innhold fra '+upFile.name+' ---\n'+upFile.data}];
     }
     upFile=null;
+    document.getElementById('ufn').textContent='—';
+    document.getElementById('dz').classList.remove('has-file');
   } else {
     content=text;
   }
 
   hist.push({role:'user',content});
-  const est=estimateTime(text, !!upFile || (content && Array.isArray(content)));
+  const est=estimateTime(text, Array.isArray(content));
   showTyping(est);
 
   try {
