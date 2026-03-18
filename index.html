@@ -159,6 +159,7 @@ header { padding:.9rem 2rem; border-bottom:1px solid var(--border); display:flex
         <button class="cmd" onclick="ic('/fill-dimensions')"><span class="ctag">/fill-dimensions</span><span class="cdesc">Hent mål</span></button>
         <button class="cmd" onclick="ic('/export')"><span class="ctag">/export</span><span class="cdesc">Generer CSV</span></button>
         <button class="cmd" onclick="ic('/search-tariff ')"><span class="ctag">/search-tariff</span><span class="cdesc">Finn tolltariff</span></button>
+        <button class="cmd" onclick="nysamtale()"><span class="ctag">/ny</span><span class="cdesc">Ny samtale / tøm historikk</span></button>
       </div>
     </div>
   </aside>
@@ -359,6 +360,37 @@ Svar på norsk med mindre brukeren skriver et annet språk.`;
 const WU = 'https://woocommerce-import2.marcus-aas-mekiassen.workers.dev';
 let hist = [], upFile = null, tmr = null, t0 = null;
 
+// ── TOKEN SAFETY ──
+const MAX_HIST_CHARS = 600000;
+
+function histSize() {
+  return hist.reduce((s, m) => {
+    const c = m.content;
+    if (typeof c === 'string') return s + c.length;
+    if (Array.isArray(c)) return s + c.map(b => (b.text||'').length + (b.source?.data||'').length).reduce((a,b)=>a+b,0);
+    return s;
+  }, 0);
+}
+
+function trimHistory() {
+  while (histSize() > MAX_HIST_CHARS && hist.length > 2) hist.shift();
+}
+
+// After Claude replies to a PDF message, swap out the raw base64 blob
+// with a lightweight placeholder — the model has already read the content.
+function compressPdfInHistory() {
+  for (let i = 0; i < hist.length; i++) {
+    const m = hist[i];
+    if (m.role === 'user' && Array.isArray(m.content)) {
+      const hasPdf = m.content.some(b => b.type === 'document' && b.source?.media_type === 'application/pdf');
+      if (hasPdf) {
+        const textBlock = m.content.find(b => b.type === 'text');
+        hist[i] = { role: 'user', content: (textBlock?.text || '') + '\n[PDF allerede lest — base64 fjernet fra kontekst for å spare plass]' };
+      }
+    }
+  }
+}
+
 // File upload
 const dz = document.getElementById('dz');
 const fi = document.getElementById('fi');
@@ -414,6 +446,23 @@ function sp(c){const i=document.getElementById('ci');i.value=c;i.focus();ar(i);}
 function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
 function hw(){const w=document.getElementById('wlc');if(w)w.remove();}
+
+function nysamtale(){
+  if(!confirm('Start ny samtale? Historikken tømmes.')) return;
+  hist = [];
+  upFile = null;
+  document.getElementById('ufn').textContent = '—';
+  document.getElementById('dz').classList.remove('has-file');
+  document.getElementById('fi').value = '';
+  const msgs = document.getElementById('msgs');
+  msgs.innerHTML = '';
+  const wlc = document.createElement('div');
+  wlc.className = 'welcome';
+  wlc.id = 'wlc';
+  wlc.innerHTML = msgs.dataset.welcome || '';
+  // Simpler: just reload welcome state
+  location.reload();
+}
 
 function fmt(t){
   let h=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
@@ -524,7 +573,20 @@ async function send(){
     const elapsed=rmTyping();
 
     if(data.error){
-      addMsg('assistant','⚠️ API-feil: '+data.error.message);
+      let errMsg = '⚠️ API-feil: ' + data.error.message;
+      if(data.error.message && data.error.message.includes('prompt is too long')) {
+        errMsg = '⚠️ Meldingen er for lang for Claude å håndtere i én omgang.\n\n'
+          + '**Hva du kan gjøre:**\n'
+          + '• Start en ny samtale og last opp bare de produktene du trenger nå\n'
+          + '• Del opp store prislister i mindre deler (f.eks. 10–20 produkter om gangen)\n'
+          + '• For PDF-er: kopier tekst fra kun relevante sider og lim inn direkte\n\n'
+          + 'Historikken er nå tømt automatisk — du kan laste opp en ny, mindre fil.';
+        hist = [];
+        upFile = null;
+        document.getElementById('ufn').textContent = '—';
+        document.getElementById('dz').classList.remove('has-file');
+      }
+      addMsg('assistant', errMsg);
       document.getElementById('sb').disabled=false;
       return;
     }
@@ -532,8 +594,19 @@ async function send(){
     const fullText=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
     hist.push({role:'assistant',content:data.content});
 
+    // After Claude has read the PDF, replace it with a small placeholder to free up tokens
+    compressPdfInHistory();
+    // Trim oldest turns if history is getting too large
+    trimHistory();
+
     const {b,col}=addMsg('assistant',fullText);
-    addMeta(col,'Svartid: '+elapsed+(data.usage?' · '+data.usage.output_tokens+' tokens':''));
+    // Show token usage and a warning if history is getting large
+    const histKb = Math.round(histSize() / 1024);
+    const usageStr = data.usage ? ` · ${data.usage.output_tokens} tokens ut · historikk ~${histKb}k tegn` : '';
+    addMeta(col,'Svartid: '+elapsed+usageStr);
+    if (histSize() > 400000) {
+      addMeta(col, '⚠️ Historikken er stor — vurder å starte ny samtale (/ny) for å unngå tokenfeil');
+    }
     offerCSV(fullText,col);
 
   } catch(err){
