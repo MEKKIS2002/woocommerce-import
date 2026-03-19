@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>WooCommerce Produkt CSV Agent</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzZiN2M1YyIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmYWY4ZjUiPk48L3RleHQ+PC9zdmc+"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMWExOTE2IiByeD0iOCIvPjx0ZXh0IHg9IjQwIiB5PSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iNDAwIiBmb250LXN0eWxlPSJpdGFsaWMiIGxldHRlci1zcGFjaW5nPSIyIiBmaWxsPSIjZjBlYWQ2Ij5XTTwvdGV4dD48L3N2Zz4="/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Mono:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -139,9 +139,57 @@ header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;ali
   .sidebar{display:none}.msgs{padding:1rem}.iarea{padding:.75rem 1rem 1rem}
   .fgrid{grid-template-columns:1fr 1fr}.wtit{font-size:1.5rem}.wsub{font-size:12.5px}
 }
+
+/* ── LOCK SCREEN ── */
+#lock-screen{position:fixed;inset:0;background:#f5f2ed;display:flex;align-items:center;justify-content:center;z-index:9999}
+.lock-box{background:#faf8f5;border:1px solid rgba(60,45,30,0.12);padding:52px 44px;text-align:center;max-width:340px;width:90%}
+.lock-logo{font-family:"Cormorant Garamond",serif;font-size:20px;font-weight:400;letter-spacing:3px;text-transform:uppercase;color:#2a2118;margin-bottom:4px}
+.lock-logo em{font-style:italic;color:#6b7c5c}
+.lock-sub{font-size:12px;color:#8a7d6e;letter-spacing:.5px;margin-bottom:36px}
+.lock-lbl{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8a7d6e;margin-bottom:10px}
+.lock-input{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(60,45,30,0.15);color:#2a2118;padding:8px 0;font-family:"Cormorant Garamond",serif;font-size:22px;letter-spacing:6px;text-align:center;outline:none;transition:border .2s;margin-bottom:28px}
+.lock-input:focus{border-bottom-color:#2a2118}
+.lock-input.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.lock-btn{background:#2a2118;color:#faf8f5;border:none;padding:12px 32px;font-family:"Jost",sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;width:100%;transition:opacity .2s}
+.lock-btn:hover{opacity:.75}
+.lock-err{font-size:11px;color:#b03a3a;margin-top:-18px;margin-bottom:20px;letter-spacing:.3px;min-height:16px}
 </style>
 </head>
 <body>
+
+<div id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-logo">Wooco<em>mmerce</em></div>
+    <div class="lock-sub">Novooi — CSV Produkt Agent</div>
+    <span class="lock-lbl">Skriv inn passord</span>
+    <input class="lock-input" id="lock-input" type="password" placeholder="••••••••" autocomplete="off" autofocus/>
+    <p class="lock-err" id="lock-err"></p>
+    <button class="lock-btn" id="lock-btn">Logg inn</button>
+  </div>
+</div>
+<script>
+(function(){
+  var PASS = "Novooi26";
+  var inp = document.getElementById("lock-input");
+  var btn = document.getElementById("lock-btn");
+  var err = document.getElementById("lock-err");
+  var screen = document.getElementById("lock-screen");
+  function attempt(){
+    if(inp.value === PASS){
+      screen.style.display = "none";
+    } else {
+      err.textContent = "Feil passord — prøv igjen.";
+      inp.classList.add("shake");
+      inp.style.borderBottomColor = "#b03a3a";
+      inp.value = "";
+      setTimeout(function(){ inp.classList.remove("shake"); inp.style.borderBottomColor = ""; }, 500);
+    }
+  }
+  btn.addEventListener("click", attempt);
+  inp.addEventListener("keydown", function(e){ if(e.key==="Enter") attempt(); });
+})();
+</script>
 <header>
   <div class="logo">
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect width="18" height="18" rx="2" fill="#6b7c5c"/><path d="M4 9h10M9 4v10" stroke="#faf8f5" stroke-width="1.8" stroke-linecap="round"/></svg>
