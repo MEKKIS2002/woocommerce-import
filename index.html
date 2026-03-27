@@ -357,6 +357,365 @@ header{padding:.85rem 1.5rem;border-bottom:1px solid var(--border);display:flex;
 </div>
 
 <script>
+var SP = 'Du er en WooCommerce produktimport-agent for Novooi. Novooi er en norsk nettbutikk som selger skandinavisk og europeisk design.\n\n=== AUTONOMT ARBEIDSFLYT — ALDRI BE BRUKEREN OM INFO DU KAN FINNE SELV ===\nNaar du faar en URL eller produktnavn:\n1. Soek paa URL-en og relevante undersider for aa hente all produktinfo\n2. Soek paa produsentens nettside for varianter, maal, vekt og materialer\n3. Soek paa tolltariffen.toll.no eller douane.europa.eu for HS-kode — PROEOV MINST 3 SOEK\n4. Soek paa "[produsentnavn] leveringstid" eller sjekk produsentens shipping-side\n5. Lever alltid en komplett CSV — ikke vent paa mer info fra brukeren\n6. Hvis noe mangler etter grundig soek: la feltet vaere tomt og noter det kort\n\n=== PRIS ===\nPriser oppgis alltid i NOK (norske kroner).\nHvis pris er i EUR: multipliser med 11.8 og rund til nearest 10.\nHvis pris er i DKK: multipliser med 1.5.\nHvis pris er i SEK: multipliser med 1.0.\nAlltid heltall, aldri komma: 6350 ikke 6350.00 og ikke 6,350.\n\n=== HS-KODE STRATEGI ===\nFor HS-kode: soek slik:\n1. Soek "tolltariff [produkttype]" paa tolltariffen.toll.no\n2. Soek "HS code [product type in English]"\n3. Soek "commodity code [product type]"\n4. Vanlige koder: stoler=94016100, sofa=94013000, bord=94036010, tepper=57050000, lamper=94053090, puter=94049090, vaser=70139900, tekstiler=63049200\nBruk disse som fallback hvis soek feiler. Ikke la feltet vaere tomt.\n\n=== LEVERINGSTID STRATEGI ===\nFor leveringstid: soek "[produsentnavn] delivery time" og "[produsentnavn] leveringstid".\nFormat: "X-Y dager" eller "X-Y uker".\nFallback hvis ukjent: "4-6 uker"\n\n=== EKSAKT KOLONNESTRUKTUR ===\nID;Type;Name;SKU;Parent;Regular price;Short description for SEO ;Product Description (Norsk);In stock?;Stock;Backorders allowed?;Weight (kg);Length (cm);Width (cm);Height (cm);Meta: _logistra_robots_product_freight_description;Meta: _logistra_robots_product_commodity_code;Meta: _estimated_shipping_text;Meta: _production_type;Position;Attribute 1 name;Attribute 1 value(s);Attribute 1 visible;Attribute 1 global;Attribute 2 name;Attribute 2 value(s);Attribute 2 visible;Attribute 2 global;Meta: _wpcom_is_markdown;Download 1 name;Download 1 URL;Download 2 name;Download 2 URL;Tax status;Date sale price starts;Date sale price ends;Tax class;Published;Is featured?;Visibility in catalog;Allow customer reviews?\n\nGRUNNREGLER:\n- Delimiter: semikolon (;). ID alltid tom. Aldri em-dash. Pris aldri med komma eller desimaler.\n- PARENT (variable): Type=variable, SKU=PRODUSENT-PRODUKT, Parent=TOM, Regular price=TOM. Fyll inn alle beskrivelser, HS-kode, shipping, freight-desc, vekt, maal HER.\n- VARIANT (variation): Type=variation, SKU=PRODUSENT-PRODUKT-VARIANT, Parent=eksakt parent SKU. Regular price=NOK-pris. Short desc=TOM. Beskrivelse=TOM (maks 1 setning hvis viktig forskjell).\n- ENKELT (simple): Type=simple, Regular price=NOK-pris, Parent=TOM.\n- ALLE rader: In stock?=1, Backorders allowed?=1, _wpcom_is_markdown=1, Published=0, Is featured?=0, Visibility=visible, Allow reviews?=1, Tax status=taxable.\n- HS-kode, shipping og freight-description: fyll ut paa parent/simple. Variantrader kan ha tomme disse.\n\nSKU: STORE BOKSTAVER, kun bindestrek. Parent: PRODUSENT-PRODUKT. Variant: PRODUSENT-PRODUKT-VARIANT.\nNAVN: Kun produktnavn. Generiske navn: legg til kategori (Ami sofa, Pebble bord, Zefira teppe).\n\nTAGS: Kun produsentnavn og/eller designernavn. IKKE Produsent/Designer som attributtnavn.\n\nATTRIBUTTER:\n- KUN for ekte varianter: farge, materiale, stoerrelse, trekk o.l.\n- ALDRI Produsent, Designer, Brand som attributter.\n- Simple produkter: attributtfelter TOMME.\n- Parent: alle verdier komma+mellomrom. Variant: kun en verdi. Visible=1, global=1.\n\nSEO (Short description for SEO): Engelsk, NOEYAKTIG 120-158 tegn. Inkluder produkttype, materiale, bruksomraade. Kun paa parent/simple.\nBESKRIVELSE (Product Description Norsk): Norsk, 5-8 setninger. Faktabasert, ikke skrytete. Basert paa hvordan andre skandinaviske nettbutikker beskriver produktet. Etterfulgt av punktliste med maal, vekt, materiale. Ikke nevn manglende info. Kun paa parent/simple.\n\nPRODUKSJONSTYPE: "Storproduksjon tilgjengelig" / "Produseres paa bestilling" / "Begrenset opplag".\nMANGLER: Skriv kompakt OVER csv-blokken: MANGLER: [felt1], [felt2]. Ikke lag lang liste.\n\nKOMMANDOER: /help /preview /validate /summary /check-prices /fill-missing /fill-prices /fill-dimensions /changelog /export /search-tariff [navn]\n\nOUTPUT: Lever alltid CSV i kodeblokk ```csv ... ``` ogsaa naar du er usikker. Skriv kort hvilke kilder du brukte.\nSvar paa norsk.'!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WooCommerce Produkt CSV Agent</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzZiN2M1YyIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmYWY4ZjUiPk48L3RleHQ+PC9zdmc+"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Mono:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f2ed;--surface:#faf8f5;--surface2:#ede9e2;
+  --border:rgba(60,45,30,0.1);--border2:rgba(60,45,30,0.2);
+  --text:#2a2118;--muted:#8a7d6e;
+  --accent:#6b7c5c;--adim:rgba(107,124,92,0.1);--adim2:rgba(107,124,92,0.2);
+  --warn:#b07d3a;--wdim:rgba(176,125,58,0.12);
+  --danger:#b03a3a;--ddim:rgba(176,58,58,0.1);
+  --info:#3a6bb0;--idim:rgba(58,107,176,0.08);
+  --fd:"Cormorant Garamond",serif;--fb:"Jost",sans-serif;--fm:"DM Mono",monospace;
+  --r:4px;--rl:6px;--compact:0
+}
+[data-dark="1"]{
+  --bg:#1a1814;--surface:#221f1b;--surface2:#2c2823;
+  --border:rgba(255,240,220,0.08);--border2:rgba(255,240,220,0.15);
+  --text:#f0ebe3;--muted:#8a7d6e;
+  --adim:rgba(107,124,92,0.15);--adim2:rgba(107,124,92,0.22);
+  --wdim:rgba(176,125,58,0.18);--ddim:rgba(176,58,58,0.18);--idim:rgba(58,107,176,0.15)
+}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:15px;font-weight:300;line-height:1.6;height:100vh;overflow:hidden;display:flex;flex-direction:column;transition:background .2s,color .2s}
+/* HEADER */
+header{padding:.85rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;gap:12px}
+.logo{font-family:var(--fd);font-weight:500;font-size:1.25rem;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.badge{background:var(--accent);color:#faf8f5;font-size:9px;font-family:var(--fb);font-weight:400;padding:2px 8px;border-radius:2px;letter-spacing:.12em;text-transform:uppercase}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hint{font-size:11px;color:var(--muted);font-family:var(--fm)}
+/* STATS BAR */
+.stats-bar{display:none;align-items:center;gap:14px;padding:.4rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.stats-bar.active{display:flex}
+.stat{display:flex;flex-direction:column;align-items:center;min-width:44px}
+.stat-num{font-size:15px;font-weight:500;color:var(--text);font-family:var(--fm);line-height:1}
+.stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:2px}
+.stat.warn .stat-num{color:var(--warn)}.stat.danger .stat-num{color:var(--danger)}.stat.good .stat-num{color:var(--accent)}
+.stat-div{width:1px;height:28px;background:var(--border2)}
+/* COMPLETENESS BAR */
+.comp-wrap{display:none;align-items:center;gap:8px;padding:.3rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.comp-wrap.active{display:flex}
+.comp-lbl{font-size:10px;font-family:var(--fm);color:var(--muted);white-space:nowrap}
+.comp-bar-bg{flex:1;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;border:1px solid var(--border)}
+.comp-bar-fill{height:100%;border-radius:2px;transition:width .5s,background .5s}
+.comp-pct{font-size:10px;font-family:var(--fm);color:var(--muted);min-width:30px;text-align:right}
+/* TOKEN METER */
+.tmeter{display:none;align-items:center;gap:6px}
+.tmeter-lbl{font-size:10px;color:var(--muted);font-family:var(--fm)}
+.tmeter-wrap{width:70px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;border:1px solid var(--border)}
+.tmeter-bar{height:100%;background:var(--accent);border-radius:2px;transition:width .4s,background .4s;width:0%}
+.tmeter-bar.warn{background:var(--warn)}.tmeter-bar.danger{background:var(--danger)}
+.tmeter-pct{font-size:10px;font-family:var(--fm);color:var(--muted);min-width:26px}
+/* ICON BUTTONS */
+.icon-btn{background:none;border:1px solid var(--border2);border-radius:var(--r);width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:background .15s,color .15s;flex-shrink:0;font-size:13px}
+.icon-btn:hover{background:var(--surface2);color:var(--text)}
+.icon-btn.active{background:var(--adim);color:var(--accent);border-color:var(--accent)}
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden;min-height:0}
+.sidebar{width:225px;min-width:225px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.25rem 0;overflow-y:auto;min-height:0;transition:width .2s}
+[data-compact="1"] .sidebar{width:185px;min-width:185px}
+.sb{padding:0 1rem 1rem}
+.sbl{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-family:var(--fb);margin-bottom:.6rem}
+.sbhr{border:none;border-top:1px solid var(--border);margin:.5rem 1rem}
+/* UPLOAD ZONE */
+.uzone{border:1.5px dashed var(--border2);border-radius:var(--r);cursor:pointer;transition:border-color .2s,background .2s;position:relative;overflow:hidden}
+.uzone:hover,.uzone.over{border-color:var(--accent);background:var(--adim)}
+.uzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:1}
+.u-idle{display:flex;flex-direction:column;align-items:center;gap:6px;padding:1rem .75rem;pointer-events:none}
+.u-icon{width:34px;height:34px;background:var(--surface2);border:1px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.u-icon svg{width:15px;height:15px}
+.u-title{font-size:12px;font-weight:400;color:var(--text);text-align:center}
+.u-sub{font-size:10px;color:var(--muted);font-family:var(--fm)}
+.u-active{display:none;align-items:center;gap:8px;padding:.7rem .75rem;pointer-events:none}
+.u-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.u-name{font-size:11px;color:var(--accent);font-family:var(--fm);word-break:break-all;line-height:1.3}
+.uzone.has-file .u-idle{display:none}.uzone.has-file .u-active{display:flex}
+.uzone.has-file{border-style:solid;border-color:var(--accent);background:var(--adim)}
+.u-clr{position:absolute;top:5px;right:5px;z-index:2;background:var(--surface2);border:1px solid var(--border2);border-radius:50%;width:18px;height:18px;display:none;align-items:center;justify-content:center;cursor:pointer;font-size:9px;color:var(--muted);pointer-events:all;line-height:1}
+.uzone.has-file .u-clr{display:flex}
+/* QUICK TEMPLATES */
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.tpl{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:5px 7px;cursor:pointer;font-size:10px;font-family:var(--fb);color:var(--text);line-height:1.3;transition:background .15s,border-color .15s;text-align:left}
+.tpl:hover{background:var(--adim);border-color:var(--accent);color:var(--accent)}
+.tpl strong{display:block;font-weight:500;font-size:10px;margin-bottom:1px;color:var(--accent)}
+/* COMMANDS */
+.cmds{display:flex;flex-direction:column;gap:1px}
+.cmd{background:none;border:none;color:var(--text);font-family:var(--fm);font-size:11.5px;padding:6px 10px;border-radius:3px;cursor:pointer;text-align:left;transition:background .15s;display:flex;align-items:center;gap:7px;width:100%}
+.cmd:hover{background:var(--surface2)}
+.ctag{color:var(--accent);font-weight:500}.cdesc{color:var(--muted);font-size:10px}
+/* DOWNLOAD LIST */
+.dl-list{display:flex;flex-direction:column;gap:2px}
+.dl-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:3px;border:1px solid var(--border);background:var(--surface);font-size:10.5px;font-family:var(--fm);cursor:pointer;transition:background .15s;text-decoration:none;overflow:hidden;color:var(--text)}
+.dl-item:hover{background:var(--surface2)}
+.dl-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--accent)}
+.dl-item-badge{font-size:9px;background:var(--ddim);color:var(--danger);border-radius:2px;padding:1px 4px;flex-shrink:0;font-family:var(--fm)}
+.dl-item-badge.ok{background:var(--adim);color:var(--accent)}
+.dl-item-time{color:var(--muted);font-size:9.5px;flex-shrink:0}
+.dl-empty{font-size:11px;color:var(--muted);font-family:var(--fm);padding:4px 2px}
+/* MAIN AREA */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.alert-banner{padding:.55rem 1.5rem;font-size:12.5px;font-weight:400;display:none;align-items:flex-start;gap:10px;border-bottom:1px solid transparent;flex-shrink:0}
+.alert-banner.warn{display:flex;background:var(--wdim);border-color:rgba(176,125,58,0.2);color:#7a4e10}
+.alert-banner.danger{display:flex;background:var(--ddim);border-color:rgba(176,58,58,0.2);color:#7a1010}
+.alert-banner.info{display:flex;background:var(--idim);border-color:rgba(58,107,176,0.15);color:#1a3d7a}
+[data-dark="1"] .alert-banner.warn{color:#f0c070}[data-dark="1"] .alert-banner.danger{color:#f07070}[data-dark="1"] .alert-banner.info{color:#90b8f8}
+.alert-body{flex:1;line-height:1.5}.alert-body strong{font-weight:500}
+.alert-close{background:none;border:none;cursor:pointer;color:inherit;opacity:.5;font-size:14px;padding:0 2px;flex-shrink:0}
+.alert-close:hover{opacity:1}
+.prog-wrap{padding:.35rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);display:none;flex-shrink:0}
+.prog-wrap.active{display:block}
+.prog-bg{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s ease;width:0%}
+.prog-lbl{font-size:10px;font-family:var(--fm);color:var(--muted);margin-top:4px}
+/* MESSAGES */
+.msgs{flex:1;overflow-y:auto;padding:1.5rem 2rem;display:flex;flex-direction:column;gap:1.25rem;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;min-height:0}
+[data-compact="1"] .msgs{padding:1rem 1.5rem;gap:.85rem}
+.msg{display:flex;gap:12px}
+.msg.u{flex-direction:row-reverse;align-self:flex-end;max-width:75%}
+.msg.a{align-self:flex-start;max-width:95%;width:100%}
+.av{width:30px;height:30px;min-width:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;font-family:var(--fb);letter-spacing:.04em}
+.av.ai{background:var(--adim2);color:var(--accent);border:1px solid rgba(107,124,92,.3)}
+.av.me{background:var(--surface2);color:var(--muted);border:1px solid var(--border2)}
+.mcol{display:flex;flex-direction:column;gap:4px;min-width:0;width:100%}
+.mmeta{font-size:10px;color:var(--muted);font-family:var(--fm);padding:0 3px}
+.msg.u .mmeta{text-align:right}
+.bbl{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:.85rem 1.1rem;font-size:14px;font-weight:300;line-height:1.7}
+[data-compact="1"] .bbl{padding:.6rem .9rem;font-size:13px}
+.msg.u .bbl{background:var(--surface2);border-color:var(--border2)}
+.bbl strong{font-weight:500}
+.bbl code{font-family:var(--fm);font-size:11px;background:var(--surface2);padding:1px 5px;border-radius:3px}
+.bbl pre{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.75rem 1rem;overflow-x:auto;font-family:var(--fm);font-size:11px;margin:.6rem 0;line-height:1.5;white-space:pre;scrollbar-width:thin}
+.bbl ul,.bbl ol{padding-left:1.3rem}.bbl li{margin-bottom:2px}
+/* CSV TABLE */
+.csv-table-wrap{margin:.75rem 0 .5rem;overflow-x:auto;border:1px solid var(--border);border-radius:var(--r);max-height:320px;overflow-y:auto;position:relative}
+.csv-table{border-collapse:collapse;font-family:var(--fm);font-size:11px;min-width:100%}
+.csv-table th{background:var(--surface2);color:var(--muted);font-size:9.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-bottom:1px solid var(--border2);text-align:left;white-space:nowrap;position:sticky;top:0;z-index:1;cursor:help}
+.csv-table th:hover::after{content:attr(data-tip);position:absolute;left:0;top:100%;background:var(--text);color:var(--bg);font-size:10px;padding:4px 8px;border-radius:3px;white-space:normal;max-width:200px;z-index:10;font-weight:400;letter-spacing:0;text-transform:none;pointer-events:none;margin-top:2px}
+.csv-table th{position:relative}
+.csv-table td{padding:5px 10px;border-bottom:1px solid var(--border);vertical-align:top;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.csv-table tr:last-child td{border-bottom:none}
+.csv-table tr:hover td{background:var(--adim)}
+/* Row type coloring */
+.csv-table tr.row-variable td:first-child{border-left:3px solid var(--accent)}
+.csv-table tr.row-variation td:first-child{border-left:3px solid var(--muted);opacity:.85}
+.csv-table tr.row-simple td:first-child{border-left:3px solid var(--info)}
+.csv-table tr.row-dup{background:rgba(176,125,58,0.07)}
+.csv-table td[contenteditable="true"]:focus{outline:1px solid var(--accent);background:var(--adim);border-radius:2px;white-space:normal;overflow:visible;max-width:none;min-width:120px}
+.tv{color:var(--accent);font-weight:500}.tvar{color:var(--muted)}.miss{color:var(--danger);font-style:italic}
+.csv-toggle{font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--fm);cursor:pointer;display:inline-flex;align-items:center;gap:4px;border:none;background:none;padding:2px 0}
+.csv-toggle:hover{color:var(--accent)}
+/* QUALITY SCORE */
+.quality-wrap{display:flex;align-items:center;gap:10px;margin:.5rem 0 .25rem;padding:.5rem .75rem;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)}
+.quality-score{font-size:18px;font-weight:500;font-family:var(--fm);min-width:32px}
+.quality-score.good{color:var(--accent)}.quality-score.mid{color:var(--warn)}.quality-score.bad{color:var(--danger)}
+.quality-label{font-size:11px;color:var(--muted);flex:1}
+.quality-breakdown{display:flex;gap:8px;flex-wrap:wrap}
+.qb-item{font-size:10px;font-family:var(--fm);display:flex;align-items:center;gap:3px}
+.qb-item.ok{color:var(--accent)}.qb-item.fail{color:var(--danger)}
+/* SOURCES BOX */
+.sources-wrap{margin:.5rem 0;padding:.55rem .75rem;background:var(--idim);border:1px solid rgba(58,107,176,0.15);border-radius:var(--r);font-size:11.5px;color:var(--muted)}
+.sources-wrap strong{font-weight:500;color:var(--text);display:block;margin-bottom:3px;font-size:11px}
+.sources-wrap a{color:var(--info);text-decoration:none;font-family:var(--fm);font-size:10.5px}
+.sources-wrap a:hover{text-decoration:underline}
+/* DL BUTTON */
+.dl-btn{display:inline-flex;align-items:center;gap:8px;margin-top:.85rem;margin-right:.4rem;background:var(--accent);color:#faf8f5;font-family:var(--fb);font-weight:400;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 18px;border-radius:3px;cursor:pointer;border:none;transition:opacity .15s;text-decoration:none;position:relative}
+.dl-btn:hover{opacity:.85}
+.dl-btn.sec{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:6px 12px;font-size:10px;margin-top:.4rem}
+.dl-btn.sec:hover{background:var(--adim)}
+.dl-badge{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;font-size:9px;border-radius:10px;padding:1px 5px;font-family:var(--fm);letter-spacing:0;text-transform:none;font-weight:500}
+/* THINKING DOTS */
+.trow{display:flex;align-items:center;gap:12px}
+.dots{display:flex;gap:4px;flex-shrink:0}
+.dot{width:5px;height:5px;background:var(--muted);border-radius:50%;animation:blink 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.est-wrap{display:flex;flex-direction:column;gap:1px}
+.est-label{font-size:12px;font-weight:400;color:var(--text);font-family:var(--fb)}
+.tms{font-size:10.5px;font-family:var(--fm);color:var(--muted)}
+/* INPUT AREA */
+.iarea{padding:.9rem 2rem 1.1rem;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+[data-compact="1"] .iarea{padding:.6rem 1.5rem .8rem}
+.irow{display:flex;gap:10px;align-items:flex-end;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.55rem .75rem;transition:border-color .2s}
+.irow:focus-within{border-color:var(--accent)}
+#ci{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:var(--fb);font-size:14px;font-weight:300;resize:none;min-height:24px;max-height:140px;line-height:1.5}
+#ci::placeholder{color:var(--muted)}
+.sbtn{background:var(--accent);border:none;color:#faf8f5;width:32px;height:32px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
+.sbtn:hover{opacity:.85}.sbtn:disabled{opacity:.35;cursor:default}
+.sbtn svg{width:14px;height:14px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:.55rem}
+.pill{font-size:11px;font-family:var(--fb);font-weight:400;letter-spacing:.04em;color:var(--muted);background:transparent;border:1px solid var(--border2);border-radius:2px;padding:3px 10px;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
+.pill:hover{color:var(--accent);border-color:var(--accent);background:var(--adim)}
+/* WELCOME SCREEN */
+.welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3rem 2rem;gap:1rem}
+.wtit{font-family:var(--fd);font-weight:400;font-size:2.4rem;letter-spacing:.03em;line-height:1.15}
+.wtit span{color:var(--accent);font-style:italic}
+.wsub{color:var(--muted);font-size:13.5px;font-weight:300;max-width:440px}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:600px;margin-top:.5rem}
+.fc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;text-align:left}
+.fc.lc{cursor:pointer;transition:border-color .2s,background .2s;text-decoration:none;display:block}
+.fc.lc:hover{border-color:var(--accent);background:var(--adim)}
+.fc-num{font-family:var(--fd);font-size:1.3rem;color:var(--accent);font-weight:400;margin-bottom:4px;line-height:1}
+.fct{font-weight:500;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;color:var(--accent)}
+.fcs{color:var(--muted);font-size:12px;font-weight:300;line-height:1.45}
+.fc-ll{display:inline-flex;align-items:center;gap:4px;margin-top:7px;font-size:10px;font-family:var(--fm);color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+@media(max-width:640px){
+  .sidebar{display:none}.msgs{padding:1rem}.iarea{padding:.75rem 1rem 1rem}
+  .fgrid{grid-template-columns:1fr 1fr}.wtit{font-size:1.5rem}.wsub{font-size:12.5px}
+  .stats-bar{display:none!important}.tmeter{display:none!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect width="18" height="18" rx="2" fill="#6b7c5c"/><path d="M4 9h10M9 4v10" stroke="#faf8f5" stroke-width="1.8" stroke-linecap="round"/></svg>
+    WooCommerce Produkt CSV Agent
+    <span class="badge">Claude AI</span>
+  </div>
+  <div class="hdr-right">
+    <div class="tmeter" id="tmeter">
+      <span class="tmeter-lbl">Kontekst</span>
+      <div class="tmeter-wrap"><div class="tmeter-bar" id="tmeter-bar"></div></div>
+      <span class="tmeter-pct" id="tmeter-pct">0%</span>
+    </div>
+    <button class="icon-btn" id="compact-btn" onclick="toggleCompact()" title="Kompakt/utvidet visning">⊟</button>
+    <button class="icon-btn" id="dark-btn" onclick="toggleDark()" title="Mørk/lys modus">◐</button>
+    <span class="hint">novooi.com</span>
+  </div>
+</header>
+
+<div class="stats-bar" id="stats-bar">
+  <div class="stat good" id="st-products"><span class="stat-num" id="sn-products">0</span><span class="stat-lbl">Produkter</span></div>
+  <div class="stat-div"></div>
+  <div class="stat" id="st-variants"><span class="stat-num" id="sn-variants">0</span><span class="stat-lbl">Varianter</span></div>
+  <div class="stat-div"></div>
+  <div class="stat" id="st-simple"><span class="stat-num" id="sn-simple">0</span><span class="stat-lbl">Simple</span></div>
+  <div class="stat-div"></div>
+  <div class="stat warn" id="st-missing"><span class="stat-num" id="sn-missing">0</span><span class="stat-lbl">Mangler</span></div>
+  <div class="stat-div"></div>
+  <div class="stat" id="st-dups"><span class="stat-num" id="sn-dups">0</span><span class="stat-lbl">Duplikater</span></div>
+</div>
+
+<div class="comp-wrap" id="comp-wrap">
+  <span class="comp-lbl">Feltutfylling</span>
+  <div class="comp-bar-bg"><div class="comp-bar-fill" id="comp-fill" style="width:0%"></div></div>
+  <span class="comp-pct" id="comp-pct">0%</span>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb">
+      <div class="sbl">Last opp fil</div>
+      <div class="uzone" id="dz">
+        <input type="file" id="fi" accept=".pdf,.xlsx,.xls,.csv,.txt"/>
+        <div class="u-idle">
+          <div class="u-icon"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5v8M4.5 5.5l3-3 3 3M2 11v1.5A1 1 0 003 13.5h9a1 1 0 001-1V11" stroke="#6b7c5c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="u-title">Last opp produktliste</div>
+          <div class="u-sub">PDF · Excel · CSV · TXT</div>
+        </div>
+        <div class="u-active"><div class="u-dot"></div><div class="u-name" id="ufn">—</div></div>
+        <div class="u-clr" id="uclr">✕</div>
+      </div>
+    </div>
+    <hr class="sbhr"/>
+    <div class="sb">
+      <div class="sbl">Hurtigmaler</div>
+      <div class="tpl-grid">
+        <button class="tpl" onclick="useTpl('nettside')"><strong>Fra nettside</strong>Lim inn URL</button>
+        <button class="tpl" onclick="useTpl('excel')"><strong>Fra Excel/CSV</strong>Last opp fil</button>
+        <button class="tpl" onclick="useTpl('oppdater')"><strong>Oppdater priser</strong>Ny prisliste</button>
+        <button class="tpl" onclick="useTpl('enkel')"><strong>Enkelt produkt</strong>Beskriv det</button>
+      </div>
+    </div>
+    <hr class="sbhr"/>
+    <div class="sb">
+      <div class="sbl">Kommandoer</div>
+      <div class="cmds">
+        <button class="cmd" onclick="ic('/help')"><span class="ctag">/help</span><span class="cdesc">Alle kommandoer</span></button>
+        <button class="cmd" onclick="ic('/preview')"><span class="ctag">/preview</span><span class="cdesc">Forhåndsvisning</span></button>
+        <button class="cmd" onclick="ic('/validate')"><span class="ctag">/validate</span><span class="cdesc">Sjekk konsistens</span></button>
+        <button class="cmd" onclick="ic('/summary')"><span class="ctag">/summary</span><span class="cdesc">Oppsummering</span></button>
+        <button class="cmd" onclick="ic('/check-prices')"><span class="ctag">/check-prices</span><span class="cdesc">Sjekk priser</span></button>
+        <button class="cmd" onclick="ic('/fill-missing')"><span class="ctag">/fill-missing</span><span class="cdesc">Fyll alt som mangler</span></button>
+        <button class="cmd" onclick="ic('/fill-prices')"><span class="ctag">/fill-prices</span><span class="cdesc">Hent priser</span></button>
+        <button class="cmd" onclick="ic('/fill-dimensions')"><span class="ctag">/fill-dimensions</span><span class="cdesc">Hent mål</span></button>
+        <button class="cmd" onclick="ic('/changelog')"><span class="ctag">/changelog</span><span class="cdesc">Endringslogg</span></button>
+        <button class="cmd" onclick="ic('/export')"><span class="ctag">/export</span><span class="cdesc">Generer CSV</span></button>
+        <button class="cmd" onclick="ic('/search-tariff ')"><span class="ctag">/search-tariff</span><span class="cdesc">Finn tolltariff</span></button>
+        <button class="cmd" onclick="nysamtale()"><span class="ctag">/ny</span><span class="cdesc">Ny samtale</span></button>
+      </div>
+    </div>
+    <hr class="sbhr"/>
+    <div class="sb">
+      <div class="sbl">Siste nedlastinger</div>
+      <div class="dl-list" id="dl-list"><div class="dl-empty" id="dl-empty">Ingen filer ennå</div></div>
+    </div>
+    <hr class="sbhr"/>
+    <div class="sb">
+      <div class="sbl">Økt</div>
+      <div class="cmds">
+        <button class="cmd" onclick="saveSession()"><span class="ctag">Lagre økt</span><span class="cdesc">Last inn igjen senere</span></button>
+        <button class="cmd" onclick="loadSessionClick()"><span class="ctag">Last inn økt</span><span class="cdesc">Fortsett tidligere</span></button>
+        <input type="file" id="session-fi" accept=".json" style="display:none" onchange="loadSessionFile(event)"/>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="alert-banner" id="alert-banner">
+      <span id="alert-icon">⚠️</span>
+      <div class="alert-body" id="alert-body"></div>
+      <button class="alert-close" onclick="closeAlert()">✕</button>
+    </div>
+    <div class="prog-wrap" id="prog-wrap">
+      <div class="prog-bg"><div class="prog-fill" id="prog-fill"></div></div>
+      <div class="prog-lbl" id="prog-lbl">Behandler...</div>
+    </div>
+    <div class="msgs" id="msgs">
+      <div class="welcome" id="wlc">
+        <div class="wtit">Konverter kataloger<br/>til <span>WooCommerce CSV</span></div>
+        <div class="wsub">Last opp en produktliste eller lim inn en URL. Agenten genererer en importklar CSV med varianter, SKU-er, beskrivelser og tariffkoder.</div>
+        <div class="fgrid">
+          <div class="fc"><div class="fc-num">1</div><div class="fct">Last opp eller lim inn</div><div class="fcs">Bruk opplastingsboksen for PDF, Excel eller CSV — eller lim inn en URL direkte i chatten.</div></div>
+          <div class="fc"><div class="fc-num">2</div><div class="fct">Be om forhåndsvisning</div><div class="fcs">Skriv <code>/preview</code> for å se parent + én variant før hele filen genereres.</div></div>
+          <div class="fc"><div class="fc-num">3</div><div class="fct">Generer og eksporter</div><div class="fcs">Skriv <code>/export</code> for ferdig CSV med SKU-er, beskrivelser og tariffkoder.</div></div>
+          <div class="fc"><div class="fc-num">4</div><div class="fct">Valider og sjekk</div><div class="fcs">Bruk <code>/validate</code> og <code>/check-prices</code> for å sikre at alt er riktig.</div></div>
+          <div class="fc"><div class="fc-num">5</div><div class="fct">Fyll inn det som mangler</div><div class="fcs">Bruk <code>/fill-missing</code> for priser, mål og shipping i én operasjon.</div></div>
+          <a class="fc lc" href="https://docs.google.com/document/d/1aM1_p6PtNiiBhyDBNhTb2LHKJQfhfnC39FQE9iJ08C4/edit?usp=sharing" target="_blank">
+            <div class="fc-num">✓</div><div class="fct">Sjekkliste før publisering</div><div class="fcs">Gå gjennom alle punktene i importguiden før produktene publiseres.</div>
+            <div class="fc-ll"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 9L9 1M9 1H3M9 1V7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Åpne sjekkliste</div>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="iarea">
+      <div class="irow">
+        <textarea id="ci" placeholder="Beskriv produkter, lim inn URL, eller skriv /help…" rows="1" onkeydown="hk(event)" oninput="ar(this)"></textarea>
+        <button class="sbtn" id="sb" onclick="send()">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div class="pills">
+        <span class="pill" onclick="sp('Generer CSV fra denne produktlisten')">Generer CSV</span>
+        <span class="pill" onclick="sp('/preview')">Forhåndsvisning</span>
+        <span class="pill" onclick="sp('/summary')">Oppsummering</span>
+        <span class="pill" onclick="sp('/check-prices')">Sjekk priser</span>
+        <span class="pill" onclick="sp('/fill-missing')">Fyll mangler</span>
+        <span class="pill" onclick="sp('/export')">Eksporter</span>
+        <span class="pill" onclick="sp('/validate')">Valider</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
 var SP = 'Du er en WooCommerce produktimport-agent for Novooi. Du konverterer produktlister, PDF-kataloger og nettsider til en ferdig WooCommerce CSV-importfil.\n\nDU HAR WEB-SOEK TILGJENGELIG OG SKAL BRUKE DET AKTIVT:\n- Naar brukeren sender en URL: soek paa den URLen og alle relevante undersider for aa hente produktinfo\n- Soek alltid etter HS-tolltariffkode, leveringstid og priser paa nett\n- Soek paa produsentens nettside, forhandlernettsider og tolltariffen.toll.no\n- ALDRI be brukeren om informasjon du kan soeke opp selv\n- Hvis du mangler info etter soek: la feltet vaere tomt og noter det, men lever alltid en CSV\n- Jobb autonomt og lever resultatet direkte\n\n=== EKSAKT KOLONNESTRUKTUR ===\nKopier denne headeren 100% noeyaktig som foerste linje i CSV:\nID;Type;Name;SKU;Parent;Regular price;Short description for SEO ;Product Description (Norsk);In stock?;Stock;Backorders allowed?;Weight (kg);Length (cm);Width (cm);Height (cm);Meta: _logistra_robots_product_freight_description;Meta: _logistra_robots_product_commodity_code;Meta: _estimated_shipping_text;Meta: _production_type;Position;Attribute 1 name;Attribute 1 value(s);Attribute 1 visible;Attribute 1 global;Attribute 2 name;Attribute 2 value(s);Attribute 2 visible;Attribute 2 global;Meta: _wpcom_is_markdown;Download 1 name;Download 1 URL;Download 2 name;Download 2 URL;Tax status;Date sale price starts;Date sale price ends;Tax class;Published;Is featured?;Visibility in catalog;Allow customer reviews?\n\nGRUNNREGLER: Delimiter semikolon (;). ID alltid tom. Aldri em-dash. Pris aldri med komma.\nPARENT: Type=variable, SKU=unik, Parent=TOM, Regular price=TOM, beskrivelser her.\nVARIANT: Type=variation, SKU=unik, Parent=eksakt SKU til parent (KRITISK).\nENKELT: Type=simple, Parent=TOM, pris her.\nALLE: In stock?=1, Backorders allowed?=1, _wpcom_is_markdown=1, Published=0, Is featured?=0, Visibility=visible, Allow reviews?=1, Tax status=taxable.\n\nSKU: STORE BOKSTAVER, bindestrek. Parent: PRODUSENT-PRODUKT. Variant: PRODUSENT-PRODUKT-VARIANT.\nNAVN: Kun produktnavn. Generiske: legg til kategori (Ami sofa, Pebble bord).\n\nTAGS: Kun produsentnavn og/eller designernavn. IKKE bruk Produsent eller Designer som attributtnavn.\n\nATTRIBUTTER:\n- KUN for ekte varianter: farge, materiale, stoerrelse, stoff o.l.\n- ALDRI Produsent, Designer, Brand som attributter.\n- Simple produkter: attributtfelter TOMME.\n- Parent: alle verdier komma+mellomrom. Variant: kun en verdi. Visible=1, global=1.\n\nSEO: Engelsk, NOEYAKTIG 120-158 tegn, kun parent/simple.\nBESKRIVELSE: Norsk, 5-8 setninger + punktliste med maal/vekt. Kun parent/simple.\n\nTARIFF - OBLIGATORISK, SOEK ALLTID:\n_freight_description = kort beskrivelse, f.eks. Polstret stol med metallramme\n_commodity_code = HS-tolltariffkode. Soek paa tolltariffen.toll.no. MAA FYLLES INN.\n_estimated_shipping_text = leveringstid, soek paa produsentens nettside. KRITISK.\n\nPRODUKSJONSTYPE: Storproduksjon tilgjengelig / Produseres paa bestilling / Begrenset opplag.\nMANGLER: Tom i CSV. Skriv OVER blokken hvilke felt som mangler.\n\nKOMMANDOER:\n/help /preview /validate /summary /check-prices /fill-missing /fill-prices /fill-dimensions /changelog /export /search-tariff [navn]\n\nOUTPUT: Lever CSV i kodeblokk: ```csv ... ```\nSvar paa norsk.'
 
 var WU = 'https://woocommerce-import2.marcus-aas-mekiassen.workers.dev';
