@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>WooCommerce Produkt CSV Agent</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMWExOTE2IiByeD0iOCIvPjx0ZXh0IHg9IjQwIiB5PSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iNDAwIiBmb250LXN0eWxlPSJpdGFsaWMiIGxldHRlci1zcGFjaW5nPSIyIiBmaWxsPSIjZjBlYWQ2Ij5XTTwvdGV4dD48L3N2Zz4="/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzZiN2M1YyIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmYWY4ZjUiPk48L3RleHQ+PC9zdmc+"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Mono:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -17,25 +17,56 @@
   --danger:#b03a3a;--ddim:rgba(176,58,58,0.1);
   --info:#3a6bb0;--idim:rgba(58,107,176,0.08);
   --fd:"Cormorant Garamond",serif;--fb:"Jost",sans-serif;--fm:"DM Mono",monospace;
-  --r:4px;--rl:6px
+  --r:4px;--rl:6px;--compact:0
 }
-body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:15px;font-weight:300;line-height:1.6;height:100vh;overflow:hidden;display:flex;flex-direction:column}
-header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0}
-.logo{font-family:var(--fd);font-weight:500;font-size:1.3rem;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:12px}
+[data-dark="1"]{
+  --bg:#1a1814;--surface:#221f1b;--surface2:#2c2823;
+  --border:rgba(255,240,220,0.08);--border2:rgba(255,240,220,0.15);
+  --text:#f0ebe3;--muted:#8a7d6e;
+  --adim:rgba(107,124,92,0.15);--adim2:rgba(107,124,92,0.22);
+  --wdim:rgba(176,125,58,0.18);--ddim:rgba(176,58,58,0.18);--idim:rgba(58,107,176,0.15)
+}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:15px;font-weight:300;line-height:1.6;height:100vh;overflow:hidden;display:flex;flex-direction:column;transition:background .2s,color .2s}
+/* HEADER */
+header{padding:.85rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;gap:12px}
+.logo{font-family:var(--fd);font-weight:500;font-size:1.25rem;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .badge{background:var(--accent);color:#faf8f5;font-size:9px;font-family:var(--fb);font-weight:400;padding:2px 8px;border-radius:2px;letter-spacing:.12em;text-transform:uppercase}
-.hdr-right{display:flex;align-items:center;gap:16px}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .hint{font-size:11px;color:var(--muted);font-family:var(--fm)}
+/* STATS BAR */
+.stats-bar{display:none;align-items:center;gap:14px;padding:.4rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.stats-bar.active{display:flex}
+.stat{display:flex;flex-direction:column;align-items:center;min-width:44px}
+.stat-num{font-size:15px;font-weight:500;color:var(--text);font-family:var(--fm);line-height:1}
+.stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:2px}
+.stat.warn .stat-num{color:var(--warn)}.stat.danger .stat-num{color:var(--danger)}.stat.good .stat-num{color:var(--accent)}
+.stat-div{width:1px;height:28px;background:var(--border2)}
+/* COMPLETENESS BAR */
+.comp-wrap{display:none;align-items:center;gap:8px;padding:.3rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.comp-wrap.active{display:flex}
+.comp-lbl{font-size:10px;font-family:var(--fm);color:var(--muted);white-space:nowrap}
+.comp-bar-bg{flex:1;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;border:1px solid var(--border)}
+.comp-bar-fill{height:100%;border-radius:2px;transition:width .5s,background .5s}
+.comp-pct{font-size:10px;font-family:var(--fm);color:var(--muted);min-width:30px;text-align:right}
+/* TOKEN METER */
 .tmeter{display:none;align-items:center;gap:6px}
 .tmeter-lbl{font-size:10px;color:var(--muted);font-family:var(--fm)}
-.tmeter-wrap{width:80px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
-.tmeter-bar{height:100%;background:var(--accent);border-radius:3px;transition:width .4s,background .4s;width:0%}
+.tmeter-wrap{width:70px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;border:1px solid var(--border)}
+.tmeter-bar{height:100%;background:var(--accent);border-radius:2px;transition:width .4s,background .4s;width:0%}
 .tmeter-bar.warn{background:var(--warn)}.tmeter-bar.danger{background:var(--danger)}
-.tmeter-pct{font-size:10px;font-family:var(--fm);color:var(--muted);min-width:28px}
+.tmeter-pct{font-size:10px;font-family:var(--fm);color:var(--muted);min-width:26px}
+/* ICON BUTTONS */
+.icon-btn{background:none;border:1px solid var(--border2);border-radius:var(--r);width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:background .15s,color .15s;flex-shrink:0;font-size:13px}
+.icon-btn:hover{background:var(--surface2);color:var(--text)}
+.icon-btn.active{background:var(--adim);color:var(--accent);border-color:var(--accent)}
+/* LAYOUT */
 .layout{display:flex;flex:1;overflow:hidden;min-height:0}
-.sidebar{width:225px;min-width:225px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.25rem 0;overflow-y:auto;min-height:0}
+.sidebar{width:225px;min-width:225px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.25rem 0;overflow-y:auto;min-height:0;transition:width .2s}
+[data-compact="1"] .sidebar{width:185px;min-width:185px}
 .sb{padding:0 1rem 1rem}
 .sbl{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-family:var(--fb);margin-bottom:.6rem}
 .sbhr{border:none;border-top:1px solid var(--border);margin:.5rem 1rem}
+/* UPLOAD ZONE */
 .uzone{border:1.5px dashed var(--border2);border-radius:var(--r);cursor:pointer;transition:border-color .2s,background .2s;position:relative;overflow:hidden}
 .uzone:hover,.uzone.over{border-color:var(--accent);background:var(--adim)}
 .uzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:1}
@@ -51,21 +82,32 @@ header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;ali
 .uzone.has-file{border-style:solid;border-color:var(--accent);background:var(--adim)}
 .u-clr{position:absolute;top:5px;right:5px;z-index:2;background:var(--surface2);border:1px solid var(--border2);border-radius:50%;width:18px;height:18px;display:none;align-items:center;justify-content:center;cursor:pointer;font-size:9px;color:var(--muted);pointer-events:all;line-height:1}
 .uzone.has-file .u-clr{display:flex}
+/* QUICK TEMPLATES */
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.tpl{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:5px 7px;cursor:pointer;font-size:10px;font-family:var(--fb);color:var(--text);line-height:1.3;transition:background .15s,border-color .15s;text-align:left}
+.tpl:hover{background:var(--adim);border-color:var(--accent);color:var(--accent)}
+.tpl strong{display:block;font-weight:500;font-size:10px;margin-bottom:1px;color:var(--accent)}
+/* COMMANDS */
 .cmds{display:flex;flex-direction:column;gap:1px}
 .cmd{background:none;border:none;color:var(--text);font-family:var(--fm);font-size:11.5px;padding:6px 10px;border-radius:3px;cursor:pointer;text-align:left;transition:background .15s;display:flex;align-items:center;gap:7px;width:100%}
 .cmd:hover{background:var(--surface2)}
 .ctag{color:var(--accent);font-weight:500}.cdesc{color:var(--muted);font-size:10px}
+/* DOWNLOAD LIST */
 .dl-list{display:flex;flex-direction:column;gap:2px}
 .dl-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:3px;border:1px solid var(--border);background:var(--surface);font-size:10.5px;font-family:var(--fm);cursor:pointer;transition:background .15s;text-decoration:none;overflow:hidden;color:var(--text)}
 .dl-item:hover{background:var(--surface2)}
 .dl-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--accent)}
+.dl-item-badge{font-size:9px;background:var(--ddim);color:var(--danger);border-radius:2px;padding:1px 4px;flex-shrink:0;font-family:var(--fm)}
+.dl-item-badge.ok{background:var(--adim);color:var(--accent)}
 .dl-item-time{color:var(--muted);font-size:9.5px;flex-shrink:0}
 .dl-empty{font-size:11px;color:var(--muted);font-family:var(--fm);padding:4px 2px}
+/* MAIN AREA */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 .alert-banner{padding:.55rem 1.5rem;font-size:12.5px;font-weight:400;display:none;align-items:flex-start;gap:10px;border-bottom:1px solid transparent;flex-shrink:0}
 .alert-banner.warn{display:flex;background:var(--wdim);border-color:rgba(176,125,58,0.2);color:#7a4e10}
 .alert-banner.danger{display:flex;background:var(--ddim);border-color:rgba(176,58,58,0.2);color:#7a1010}
 .alert-banner.info{display:flex;background:var(--idim);border-color:rgba(58,107,176,0.15);color:#1a3d7a}
+[data-dark="1"] .alert-banner.warn{color:#f0c070}[data-dark="1"] .alert-banner.danger{color:#f07070}[data-dark="1"] .alert-banner.info{color:#90b8f8}
 .alert-body{flex:1;line-height:1.5}.alert-body strong{font-weight:500}
 .alert-close{background:none;border:none;cursor:pointer;color:inherit;opacity:.5;font-size:14px;padding:0 2px;flex-shrink:0}
 .alert-close:hover{opacity:1}
@@ -74,7 +116,9 @@ header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;ali
 .prog-bg{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
 .prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s ease;width:0%}
 .prog-lbl{font-size:10px;font-family:var(--fm);color:var(--muted);margin-top:4px}
+/* MESSAGES */
 .msgs{flex:1;overflow-y:auto;padding:1.5rem 2rem;display:flex;flex-direction:column;gap:1.25rem;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;min-height:0}
+[data-compact="1"] .msgs{padding:1rem 1.5rem;gap:.85rem}
 .msg{display:flex;gap:12px}
 .msg.u{flex-direction:row-reverse;align-self:flex-end;max-width:75%}
 .msg.a{align-self:flex-start;max-width:95%;width:100%}
@@ -85,25 +129,50 @@ header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;ali
 .mmeta{font-size:10px;color:var(--muted);font-family:var(--fm);padding:0 3px}
 .msg.u .mmeta{text-align:right}
 .bbl{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:.85rem 1.1rem;font-size:14px;font-weight:300;line-height:1.7}
+[data-compact="1"] .bbl{padding:.6rem .9rem;font-size:13px}
 .msg.u .bbl{background:var(--surface2);border-color:var(--border2)}
 .bbl strong{font-weight:500}
 .bbl code{font-family:var(--fm);font-size:11px;background:var(--surface2);padding:1px 5px;border-radius:3px}
 .bbl pre{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.75rem 1rem;overflow-x:auto;font-family:var(--fm);font-size:11px;margin:.6rem 0;line-height:1.5;white-space:pre;scrollbar-width:thin}
 .bbl ul,.bbl ol{padding-left:1.3rem}.bbl li{margin-bottom:2px}
-.csv-table-wrap{margin:.75rem 0 .5rem;overflow-x:auto;border:1px solid var(--border);border-radius:var(--r);max-height:300px;overflow-y:auto}
+/* CSV TABLE */
+.csv-table-wrap{margin:.75rem 0 .5rem;overflow-x:auto;border:1px solid var(--border);border-radius:var(--r);max-height:320px;overflow-y:auto;position:relative}
 .csv-table{border-collapse:collapse;font-family:var(--fm);font-size:11px;min-width:100%}
-.csv-table th{background:var(--surface2);color:var(--muted);font-size:9.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-bottom:1px solid var(--border2);text-align:left;white-space:nowrap;position:sticky;top:0;z-index:1}
+.csv-table th{background:var(--surface2);color:var(--muted);font-size:9.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-bottom:1px solid var(--border2);text-align:left;white-space:nowrap;position:sticky;top:0;z-index:1;cursor:help}
+.csv-table th:hover::after{content:attr(data-tip);position:absolute;left:0;top:100%;background:var(--text);color:var(--bg);font-size:10px;padding:4px 8px;border-radius:3px;white-space:normal;max-width:200px;z-index:10;font-weight:400;letter-spacing:0;text-transform:none;pointer-events:none;margin-top:2px}
+.csv-table th{position:relative}
 .csv-table td{padding:5px 10px;border-bottom:1px solid var(--border);vertical-align:top;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
 .csv-table tr:last-child td{border-bottom:none}
 .csv-table tr:hover td{background:var(--adim)}
+/* Row type coloring */
+.csv-table tr.row-variable td:first-child{border-left:3px solid var(--accent)}
+.csv-table tr.row-variation td:first-child{border-left:3px solid var(--muted);opacity:.85}
+.csv-table tr.row-simple td:first-child{border-left:3px solid var(--info)}
+.csv-table tr.row-dup{background:rgba(176,125,58,0.07)}
 .csv-table td[contenteditable="true"]:focus{outline:1px solid var(--accent);background:var(--adim);border-radius:2px;white-space:normal;overflow:visible;max-width:none;min-width:120px}
 .tv{color:var(--accent);font-weight:500}.tvar{color:var(--muted)}.miss{color:var(--danger);font-style:italic}
 .csv-toggle{font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--fm);cursor:pointer;display:inline-flex;align-items:center;gap:4px;border:none;background:none;padding:2px 0}
 .csv-toggle:hover{color:var(--accent)}
-.dl-btn{display:inline-flex;align-items:center;gap:8px;margin-top:.85rem;margin-right:.4rem;background:var(--accent);color:#faf8f5;font-family:var(--fb);font-weight:400;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 18px;border-radius:3px;cursor:pointer;border:none;transition:opacity .15s;text-decoration:none}
+/* QUALITY SCORE */
+.quality-wrap{display:flex;align-items:center;gap:10px;margin:.5rem 0 .25rem;padding:.5rem .75rem;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)}
+.quality-score{font-size:18px;font-weight:500;font-family:var(--fm);min-width:32px}
+.quality-score.good{color:var(--accent)}.quality-score.mid{color:var(--warn)}.quality-score.bad{color:var(--danger)}
+.quality-label{font-size:11px;color:var(--muted);flex:1}
+.quality-breakdown{display:flex;gap:8px;flex-wrap:wrap}
+.qb-item{font-size:10px;font-family:var(--fm);display:flex;align-items:center;gap:3px}
+.qb-item.ok{color:var(--accent)}.qb-item.fail{color:var(--danger)}
+/* SOURCES BOX */
+.sources-wrap{margin:.5rem 0;padding:.55rem .75rem;background:var(--idim);border:1px solid rgba(58,107,176,0.15);border-radius:var(--r);font-size:11.5px;color:var(--muted)}
+.sources-wrap strong{font-weight:500;color:var(--text);display:block;margin-bottom:3px;font-size:11px}
+.sources-wrap a{color:var(--info);text-decoration:none;font-family:var(--fm);font-size:10.5px}
+.sources-wrap a:hover{text-decoration:underline}
+/* DL BUTTON */
+.dl-btn{display:inline-flex;align-items:center;gap:8px;margin-top:.85rem;margin-right:.4rem;background:var(--accent);color:#faf8f5;font-family:var(--fb);font-weight:400;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 18px;border-radius:3px;cursor:pointer;border:none;transition:opacity .15s;text-decoration:none;position:relative}
 .dl-btn:hover{opacity:.85}
 .dl-btn.sec{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:6px 12px;font-size:10px;margin-top:.4rem}
 .dl-btn.sec:hover{background:var(--adim)}
+.dl-badge{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;font-size:9px;border-radius:10px;padding:1px 5px;font-family:var(--fm);letter-spacing:0;text-transform:none;font-weight:500}
+/* THINKING DOTS */
 .trow{display:flex;align-items:center;gap:12px}
 .dots{display:flex;gap:4px;flex-shrink:0}
 .dot{width:5px;height:5px;background:var(--muted);border-radius:50%;animation:blink 1.2s infinite}
@@ -112,7 +181,9 @@ header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;ali
 .est-wrap{display:flex;flex-direction:column;gap:1px}
 .est-label{font-size:12px;font-weight:400;color:var(--text);font-family:var(--fb)}
 .tms{font-size:10.5px;font-family:var(--fm);color:var(--muted)}
+/* INPUT AREA */
 .iarea{padding:.9rem 2rem 1.1rem;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+[data-compact="1"] .iarea{padding:.6rem 1.5rem .8rem}
 .irow{display:flex;gap:10px;align-items:flex-end;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.55rem .75rem;transition:border-color .2s}
 .irow:focus-within{border-color:var(--accent)}
 #ci{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:var(--fb);font-size:14px;font-weight:300;resize:none;min-height:24px;max-height:140px;line-height:1.5}
@@ -123,6 +194,7 @@ header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;ali
 .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:.55rem}
 .pill{font-size:11px;font-family:var(--fb);font-weight:400;letter-spacing:.04em;color:var(--muted);background:transparent;border:1px solid var(--border2);border-radius:2px;padding:3px 10px;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
 .pill:hover{color:var(--accent);border-color:var(--accent);background:var(--adim)}
+/* WELCOME SCREEN */
 .welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3rem 2rem;gap:1rem}
 .wtit{font-family:var(--fd);font-weight:400;font-size:2.4rem;letter-spacing:.03em;line-height:1.15}
 .wtit span{color:var(--accent);font-style:italic}
@@ -138,58 +210,11 @@ header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;ali
 @media(max-width:640px){
   .sidebar{display:none}.msgs{padding:1rem}.iarea{padding:.75rem 1rem 1rem}
   .fgrid{grid-template-columns:1fr 1fr}.wtit{font-size:1.5rem}.wsub{font-size:12.5px}
+  .stats-bar{display:none!important}.tmeter{display:none!important}
 }
-
-/* ── LOCK SCREEN ── */
-#lock-screen{position:fixed;inset:0;background:#f5f2ed;display:flex;align-items:center;justify-content:center;z-index:9999}
-.lock-box{background:#faf8f5;border:1px solid rgba(60,45,30,0.12);padding:52px 44px;text-align:center;max-width:340px;width:90%}
-.lock-logo{font-family:"Cormorant Garamond",serif;font-size:20px;font-weight:400;letter-spacing:3px;text-transform:uppercase;color:#2a2118;margin-bottom:4px}
-.lock-logo em{font-style:italic;color:#6b7c5c}
-.lock-sub{font-size:12px;color:#8a7d6e;letter-spacing:.5px;margin-bottom:36px}
-.lock-lbl{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8a7d6e;margin-bottom:10px}
-.lock-input{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(60,45,30,0.15);color:#2a2118;padding:8px 0;font-family:"Cormorant Garamond",serif;font-size:22px;letter-spacing:6px;text-align:center;outline:none;transition:border .2s;margin-bottom:28px}
-.lock-input:focus{border-bottom-color:#2a2118}
-.lock-input.shake{animation:shake .4s}
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-.lock-btn{background:#2a2118;color:#faf8f5;border:none;padding:12px 32px;font-family:"Jost",sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;width:100%;transition:opacity .2s}
-.lock-btn:hover{opacity:.75}
-.lock-err{font-size:11px;color:#b03a3a;margin-top:-18px;margin-bottom:20px;letter-spacing:.3px;min-height:16px}
 </style>
 </head>
 <body>
-
-<div id="lock-screen">
-  <div class="lock-box">
-    <div class="lock-logo">Wooco<em>mmerce</em></div>
-    <div class="lock-sub">Novooi — CSV Produkt Agent</div>
-    <span class="lock-lbl">Skriv inn passord</span>
-    <input class="lock-input" id="lock-input" type="password" placeholder="••••••••" autocomplete="off" autofocus/>
-    <p class="lock-err" id="lock-err"></p>
-    <button class="lock-btn" id="lock-btn">Logg inn</button>
-  </div>
-</div>
-<script>
-(function(){
-  var PASS = "Novooi26";
-  var inp = document.getElementById("lock-input");
-  var btn = document.getElementById("lock-btn");
-  var err = document.getElementById("lock-err");
-  var screen = document.getElementById("lock-screen");
-  function attempt(){
-    if(inp.value === PASS){
-      screen.style.display = "none";
-    } else {
-      err.textContent = "Feil passord — prøv igjen.";
-      inp.classList.add("shake");
-      inp.style.borderBottomColor = "#b03a3a";
-      inp.value = "";
-      setTimeout(function(){ inp.classList.remove("shake"); inp.style.borderBottomColor = ""; }, 500);
-    }
-  }
-  btn.addEventListener("click", attempt);
-  inp.addEventListener("keydown", function(e){ if(e.key==="Enter") attempt(); });
-})();
-</script>
 <header>
   <div class="logo">
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect width="18" height="18" rx="2" fill="#6b7c5c"/><path d="M4 9h10M9 4v10" stroke="#faf8f5" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -202,9 +227,30 @@ header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;ali
       <div class="tmeter-wrap"><div class="tmeter-bar" id="tmeter-bar"></div></div>
       <span class="tmeter-pct" id="tmeter-pct">0%</span>
     </div>
+    <button class="icon-btn" id="compact-btn" onclick="toggleCompact()" title="Kompakt/utvidet visning">⊟</button>
+    <button class="icon-btn" id="dark-btn" onclick="toggleDark()" title="Mørk/lys modus">◐</button>
     <span class="hint">novooi.com</span>
   </div>
 </header>
+
+<div class="stats-bar" id="stats-bar">
+  <div class="stat good" id="st-products"><span class="stat-num" id="sn-products">0</span><span class="stat-lbl">Produkter</span></div>
+  <div class="stat-div"></div>
+  <div class="stat" id="st-variants"><span class="stat-num" id="sn-variants">0</span><span class="stat-lbl">Varianter</span></div>
+  <div class="stat-div"></div>
+  <div class="stat" id="st-simple"><span class="stat-num" id="sn-simple">0</span><span class="stat-lbl">Simple</span></div>
+  <div class="stat-div"></div>
+  <div class="stat warn" id="st-missing"><span class="stat-num" id="sn-missing">0</span><span class="stat-lbl">Mangler</span></div>
+  <div class="stat-div"></div>
+  <div class="stat" id="st-dups"><span class="stat-num" id="sn-dups">0</span><span class="stat-lbl">Duplikater</span></div>
+</div>
+
+<div class="comp-wrap" id="comp-wrap">
+  <span class="comp-lbl">Feltutfylling</span>
+  <div class="comp-bar-bg"><div class="comp-bar-fill" id="comp-fill" style="width:0%"></div></div>
+  <span class="comp-pct" id="comp-pct">0%</span>
+</div>
+
 <div class="layout">
   <aside class="sidebar">
     <div class="sb">
@@ -218,6 +264,16 @@ header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;ali
         </div>
         <div class="u-active"><div class="u-dot"></div><div class="u-name" id="ufn">—</div></div>
         <div class="u-clr" id="uclr">✕</div>
+      </div>
+    </div>
+    <hr class="sbhr"/>
+    <div class="sb">
+      <div class="sbl">Hurtigmaler</div>
+      <div class="tpl-grid">
+        <button class="tpl" onclick="useTpl('nettside')"><strong>Fra nettside</strong>Lim inn URL</button>
+        <button class="tpl" onclick="useTpl('excel')"><strong>Fra Excel/CSV</strong>Last opp fil</button>
+        <button class="tpl" onclick="useTpl('oppdater')"><strong>Oppdater priser</strong>Ny prisliste</button>
+        <button class="tpl" onclick="useTpl('enkel')"><strong>Enkelt produkt</strong>Beskriv det</button>
       </div>
     </div>
     <hr class="sbhr"/>
@@ -299,15 +355,61 @@ header{padding:.9rem 2rem;border-bottom:1px solid var(--border);display:flex;ali
     </div>
   </main>
 </div>
+
 <script>
-var SP = 'Du er en WooCommerce produktimport-agent for Novooi. Du konverterer produktlister, PDF-kataloger og nettsider til en ferdig WooCommerce CSV-importfil.\n\n=== EKSAKT KOLONNESTRUKTUR ===\nKopier denne headeren 100% noeyaktig som foerste linje i CSV:\nID;Type;Name;SKU;Parent;Regular price;Short description for SEO ;Product Description (Norsk);In stock?;Stock;Backorders allowed?;Weight (kg);Length (cm);Width (cm);Height (cm);Meta: _logistra_robots_product_freight_description;Meta: _logistra_robots_product_commodity_code;Meta: _estimated_shipping_text;Meta: _production_type;Position;Attribute 1 name;Attribute 1 value(s);Attribute 1 visible;Attribute 1 global;Attribute 2 name;Attribute 2 value(s);Attribute 2 visible;Attribute 2 global;Meta: _wpcom_is_markdown;Download 1 name;Download 1 URL;Download 2 name;Download 2 URL;Tax status;Date sale price starts;Date sale price ends;Tax class;Published;Is featured?;Visibility in catalog;Allow customer reviews?\n\nGRUNNREGLER: Delimiter semikolon (;). ID alltid tom. Aldri em-dash. Pris aldri med komma.\nPARENT: Type=variable, SKU=unik, Parent=TOM, Regular price=TOM, beskrivelser her.\nVARIANT: Type=variation, SKU=unik, Parent=eksakt SKU til parent (KRITISK).\nENKELT: Type=simple, Parent=TOM, pris her.\nALLE: In stock?=1, Backorders allowed?=1, _wpcom_is_markdown=1, Published=0, Is featured?=0, Visibility=visible, Allow reviews?=1, Tax status=taxable.\n\nSKU: STORE BOKSTAVER, bindestrek. Parent: PRODUSENT-PRODUKT. Variant: PRODUSENT-PRODUKT-VARIANT.\nNAVN: Kun produktnavn. Generiske: legg til kategori (Ami sofa, Pebble bord).\nTAGS: Kun produsentnavn og designernavn. Komma+mellomrom.\nSEO: Engelsk, NOEYAKTIG 120-158 tegn, kun parent/simple.\nBESKRIVELSE: Norsk, 5-8 setninger + punktliste med maal/vekt. Kun parent/simple.\nTARIFF: _freight_description=kort setning. _commodity_code=HS-kode. _estimated_shipping_text=leveringstid (soek aktivt).\nPRODUKSJONSTYPE: Storproduksjon tilgjengelig / Produseres paa bestilling / Begrenset opplag.\nATTRIBUTTER: Parent alle verdier komma+mellomrom. Variant kun en. Visible=1, global=1.\nMANGLER: La felt tom. Skriv OVER blokken: MANGLER: [felt].\n\nKOMMANDOER:\n/help - vis alle kommandoer\n/preview - vis parent + en variant\n/validate - sjekk SKU, Parent-refs, attributter\n/summary - oppsummering: antall produkter/varianter, mangler, typer\n/check-prices - flagg manglende/nullpriser og urealistiske priser\n/fill-missing - kjoer fill-prices + fill-dimensions + shipping i en operasjon\n/fill-prices - hent manglende priser\n/fill-dimensions - hent maal/vekt\n/changelog - logg over endringer i samtalen\n/export - generer ferdig CSV\n/search-tariff [navn] - soek HS-kode\n\nOUTPUT: Lever CSV i kodeblokk: ```csv ... ```\nSvar paa norsk.';
+var SP = 'Du er en WooCommerce produktimport-agent for Novooi. Du konverterer produktlister, PDF-kataloger og nettsider til en ferdig WooCommerce CSV-importfil.\n\n=== EKSAKT KOLONNESTRUKTUR ===\nKopier denne headeren 100% noeyaktig som foerste linje i CSV:\nID;Type;Name;SKU;Parent;Regular price;Short description for SEO ;Product Description (Norsk);In stock?;Stock;Backorders allowed?;Weight (kg);Length (cm);Width (cm);Height (cm);Meta: _logistra_robots_product_freight_description;Meta: _logistra_robots_product_commodity_code;Meta: _estimated_shipping_text;Meta: _production_type;Position;Attribute 1 name;Attribute 1 value(s);Attribute 1 visible;Attribute 1 global;Attribute 2 name;Attribute 2 value(s);Attribute 2 visible;Attribute 2 global;Meta: _wpcom_is_markdown;Download 1 name;Download 1 URL;Download 2 name;Download 2 URL;Tax status;Date sale price starts;Date sale price ends;Tax class;Published;Is featured?;Visibility in catalog;Allow customer reviews?\n\nGRUNNREGLER: Delimiter semikolon (;). ID alltid tom. Aldri em-dash. Pris aldri med komma.\nPARENT: Type=variable, SKU=unik, Parent=TOM, Regular price=TOM, beskrivelser her.\nVARIANT: Type=variation, SKU=unik, Parent=eksakt SKU til parent (KRITISK).\nENKELT: Type=simple, Parent=TOM, pris her.\nALLE: In stock?=1, Backorders allowed?=1, _wpcom_is_markdown=1, Published=0, Is featured?=0, Visibility=visible, Allow reviews?=1, Tax status=taxable.\n\nSKU: STORE BOKSTAVER, bindestrek. Parent: PRODUSENT-PRODUKT. Variant: PRODUSENT-PRODUKT-VARIANT.\nNAVN: Kun produktnavn. Generiske: legg til kategori (Ami sofa, Pebble bord).\n\nTAGS: Kun produsentnavn og/eller designernavn som tags. Komma+mellomrom. IKKE bruk Produsent eller Designer som attributtnavn.\n\nATTRIBUTTER - KRITISKE REGLER:\n- Attributter brukes KUN for ekte produktvarianter som farge, materiale, stoerrelse, stoff o.l.\n- ALDRI legg til Produsent, Designer, Brand eller lignende som attributter - disse er kun tags.\n- Simple produkter (ingen varianter): Attributt-feltene skal vaere TOMME. Ingen attributter paa simple produkter.\n- Variable produkter: Parent faar alle attributtverdier komma+mellomrom. Variant faar kun en verdi. Visible=1, global=1.\n- Eksempel gyldige attributter: Farge, Materiale, Stoerrelse, Trekk, Understell\n- Eksempel UGYLDIGE attributter: Produsent, Designer, Brand, Merkevare\n\nSEO: Engelsk, NOEYAKTIG 120-158 tegn, kun parent/simple.\nBESKRIVELSE: Norsk, 5-8 setninger + punktliste med maal/vekt. Kun parent/simple.\n\nTARIFF - KRITISK, MAA ALLTID FYLLES INN:\n_logistra_robots_product_freight_description = kort beskrivelse av produktet for tollformaal, f.eks. Polstret stol med metallramme\n_logistra_robots_product_commodity_code = HS-tolltariffkode, f.eks. 94016100. DETTE FELTET MAA ALLTID FYLLES INN. Soek aktivt paa toll.no, tariff.toll.no eller EU HS-kode databasen. Ikke la dette feltet vaere tomt.\n_estimated_shipping_text = leveringstid f.eks. 3-6 uker. Soek aktivt paa produsentens nettside eller kontakt produsent. KRITISK.\n\nHVIS HS-KODE MANGLER: Soek paa https://tolltariffen.toll.no eller bruk EU HS-kode systemet. Skriv tydelig hvilken kode du fant og kilden. Ikke lever CSV uten HS-kode med mindre du har soekt og ikke funnet noe - i saa fall skriv MANGLER: HS-kode maa fylles inn manuelt.\n\nPRODUKSJONSTYPE: Storproduksjon tilgjengelig / Produseres paa bestilling / Begrenset opplag.\nMANGLER: La felt tom i CSV. Skriv tydelig OVER csv-blokken hvilke felt som mangler.\n\nKOMMANDOER:\n/help - vis alle kommandoer\n/preview - vis parent + en variant\n/validate - sjekk SKU, Parent-refs, attributter, HS-koder\n/summary - oppsummering: antall produkter/varianter, mangler, typer\n/check-prices - flagg manglende/nullpriser og urealistiske priser\n/fill-missing - kjoer fill-prices + fill-dimensions + shipping + HS-koder i en operasjon\n/fill-prices - hent manglende priser\n/fill-dimensions - hent maal/vekt\n/changelog - logg over endringer i samtalen\n/export - generer ferdig CSV\n/search-tariff [navn] - soek HS-kode for produkt\n\nOUTPUT: Lever CSV i kodeblokk: ```csv ... ```\nSvar paa norsk.';
 
 var WU = 'https://woocommerce-import2.marcus-aas-mekiassen.workers.dev';
 var hist = [], upFile = null, tmr = null, t0 = null;
 var dlHistory = [], changeLog = [], turnCount = 0;
 var MAX_HIST = 600000;
 var progTimer = null;
+var lastCsvStats = null;
 
+// Column tooltips
+var COL_TIPS = {"Type": "variable = produkt med varianter, variation = variant, simple = enkelt produkt", "Name": "Produktnavn \u2014 identisk p\u00e5 parent og alle varianter", "SKU": "Unik produktkode. Format: PRODUSENT-PRODUKT eller PRODUSENT-PRODUKT-VARIANT", "Parent": "SKU-en til parent-produktet. Tom p\u00e5 parent og simple.", "Regular price": "Pris i NOK uten komma. Tom p\u00e5 parent (kun p\u00e5 varianter).", "Meta: _logistra_robots_product_commodity_code": "HS-tolltariffkode \u2014 OBLIGATORISK. Finn p\u00e5 tolltariffen.toll.no", "Meta: _estimated_shipping_text": "Leveringstid, f.eks. \"3-6 uker\". Finn p\u00e5 produsentens nettside.", "Meta: _logistra_robots_product_freight_description": "Kort beskrivelse for tollform\u00e5l, f.eks. \"Polstret stol med metallramme\"", "Weight (kg)": "Vekt i kilogram", "Length (cm)": "Lengde i centimeter", "Width (cm)": "Bredde i centimeter", "Height (cm)": "H\u00f8yde i centimeter", "Attribute 1 name": "Navn p\u00e5 attributt, f.eks. Farge, Materiale. IKKE Produsent/Designer.", "Attribute 1 value(s)": "Parent: alle verdier kommaseparert. Variant: kun \u00e9n verdi.", "Short description for SEO ": "Engelske meta-beskrivelse, 120-158 tegn n\u00f8yaktig."};
+
+// ── DARK MODE + COMPACT ──
+function toggleDark() {
+  var d = document.documentElement;
+  var on = d.getAttribute('data-dark') === '1';
+  d.setAttribute('data-dark', on ? '0' : '1');
+  localStorage.setItem('novooi-dark', on ? '0' : '1');
+  document.getElementById('dark-btn').classList.toggle('active', !on);
+}
+function toggleCompact() {
+  var d = document.documentElement;
+  var on = d.getAttribute('data-compact') === '1';
+  d.setAttribute('data-compact', on ? '0' : '1');
+  localStorage.setItem('novooi-compact', on ? '0' : '1');
+  document.getElementById('compact-btn').classList.toggle('active', !on);
+}
+(function initPrefs() {
+  if (localStorage.getItem('novooi-dark') === '1') {
+    document.documentElement.setAttribute('data-dark', '1');
+    document.getElementById('dark-btn').classList.add('active');
+  }
+  if (localStorage.getItem('novooi-compact') === '1') {
+    document.documentElement.setAttribute('data-compact', '1');
+    document.getElementById('compact-btn').classList.add('active');
+  }
+})();
+
+// ── QUICK TEMPLATES ──
+var TEMPLATES = {
+  nettside: 'Generer WooCommerce CSV fra denne nettsiden: [LIM INN URL HER]',
+  excel: 'Jeg laster opp en Excel/CSV prisliste. Generer WooCommerce CSV fra denne.',
+  oppdater: 'Jeg laster opp en ny prisliste. Oppdater prisene i den eksisterende CSV-en.',
+  enkel: 'Lag ett enkelt produkt (Type=simple) basert på denne beskrivelsen: [BESKRIV PRODUKT]'
+};
+function useTpl(key) {
+  var t = TEMPLATES[key];
+  var inp = document.getElementById('ci');
+  inp.value = t; ar(inp); inp.focus();
+  inp.setSelectionRange(t.indexOf('['), t.indexOf(']') + 1);
+}
+
+// ── HISTORY MANAGEMENT ──
 function histSize() {
   return hist.reduce(function(s, m) {
     var c = m.content;
@@ -318,19 +420,13 @@ function histSize() {
     return s;
   }, 0);
 }
-
-function trimHistory() {
-  while (histSize() > MAX_HIST && hist.length > 2) { hist.shift(); }
-}
-
+function trimHistory() { while (histSize() > MAX_HIST && hist.length > 2) hist.shift(); }
 function compressPdfInHistory() {
   var i, m, hasPdf, tb;
   for (i = 0; i < hist.length; i++) {
     m = hist[i];
     if (m.role === 'user' && Array.isArray(m.content)) {
-      hasPdf = m.content.some(function(b) {
-        return b.type === 'document' && b.source && b.source.media_type === 'application/pdf';
-      });
+      hasPdf = m.content.some(function(b) { return b.type === 'document' && b.source && b.source.media_type === 'application/pdf'; });
       if (hasPdf) {
         tb = m.content.find(function(b) { return b.type === 'text'; });
         hist[i] = { role: 'user', content: (tb ? tb.text : '') + '\n[PDF lest]' };
@@ -339,6 +435,7 @@ function compressPdfInHistory() {
   }
 }
 
+// ── TOKEN METER ──
 function updateTokenMeter() {
   var pct = Math.min(100, Math.round(histSize() / MAX_HIST * 100));
   var bar = document.getElementById('tmeter-bar');
@@ -351,75 +448,177 @@ function updateTokenMeter() {
   bar.className = 'tmeter-bar' + (pct > 80 ? ' danger' : pct > 55 ? ' warn' : '');
 }
 
+// ── STATS BAR + COMPLETENESS ──
+function updateStats(csvText) {
+  if (!csvText) return;
+  var lines = csvText.trim().split('\n');
+  if (lines.length < 2) return;
+  var headers = lines[0].split(';');
+  var rows = lines.slice(1).map(function(l) { return l.split(';'); });
+
+  var typeIdx = headers.findIndex(function(h) { return h.trim() === 'Type'; });
+  var priceIdx = headers.findIndex(function(h) { return h.trim() === 'Regular price'; });
+  var hsIdx = headers.findIndex(function(h) { return h.trim() === 'Meta: _logistra_robots_product_commodity_code'; });
+  var shipIdx = headers.findIndex(function(h) { return h.trim() === 'Meta: _estimated_shipping_text'; });
+  var weightIdx = headers.findIndex(function(h) { return h.trim() === 'Weight (kg)'; });
+
+  var nVar = 0, nVariation = 0, nSimple = 0, nMissing = 0;
+  var skus = [], dupSkus = 0;
+  var skuIdx = headers.findIndex(function(h) { return h.trim() === 'SKU'; });
+
+  // Completeness check fields
+  var totalRequired = 0, totalFilled = 0;
+  var criticalFields = [priceIdx, hsIdx, shipIdx];
+
+  rows.forEach(function(row) {
+    var type = (row[typeIdx] || '').trim();
+    if (type === 'variable') nVar++;
+    else if (type === 'variation') nVariation++;
+    else if (type === 'simple') nSimple++;
+
+    // Duplicate SKU check
+    var sku = (row[skuIdx] || '').trim();
+    if (sku) { if (skus.indexOf(sku) !== -1) dupSkus++; else skus.push(sku); }
+
+    // Missing critical fields (only on variable/simple parents, not variations)
+    if (type !== 'variation') {
+      criticalFields.forEach(function(ci) {
+        if (ci >= 0) {
+          totalRequired++;
+          var val = (row[ci] || '').trim();
+          if (val) totalFilled++;
+          else nMissing++;
+        }
+      });
+    }
+  });
+
+  // Update stats bar
+  var sb = document.getElementById('stats-bar');
+  sb.classList.add('active');
+  document.getElementById('sn-products').textContent = nVar;
+  document.getElementById('sn-variants').textContent = nVariation;
+  document.getElementById('sn-simple').textContent = nSimple;
+  document.getElementById('sn-missing').textContent = nMissing;
+  document.getElementById('sn-dups').textContent = dupSkus;
+  document.getElementById('st-missing').className = 'stat ' + (nMissing > 0 ? 'danger' : 'good');
+  document.getElementById('st-dups').className = 'stat ' + (dupSkus > 0 ? 'danger' : 'good');
+
+  // Completeness bar
+  var pct = totalRequired > 0 ? Math.round(totalFilled / totalRequired * 100) : 100;
+  var cw = document.getElementById('comp-wrap');
+  cw.classList.add('active');
+  var fill = document.getElementById('comp-fill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct >= 90 ? 'var(--accent)' : pct >= 60 ? 'var(--warn)' : 'var(--danger)';
+  document.getElementById('comp-pct').textContent = pct + '%';
+
+  lastCsvStats = { nVar: nVar, nVariation: nVariation, nSimple: nSimple, nMissing: nMissing, dupSkus: dupSkus, completeness: pct };
+  return lastCsvStats;
+}
+
+// ── QUALITY SCORE ──
+function buildQualityScore(stats) {
+  if (!stats) return null;
+  var score = 10;
+  if (stats.nMissing > 0) score -= Math.min(4, stats.nMissing);
+  if (stats.dupSkus > 0) score -= 2;
+  if (stats.completeness < 80) score -= 2;
+  score = Math.max(1, score);
+
+  var wrap = document.createElement('div'); wrap.className = 'quality-wrap';
+  var sc = document.createElement('div'); sc.className = 'quality-score ' + (score >= 8 ? 'good' : score >= 5 ? 'mid' : 'bad');
+  sc.textContent = score + '/10';
+  var lbl = document.createElement('div'); lbl.className = 'quality-label';
+  lbl.textContent = score >= 8 ? 'God kvalitet — klar for import' : score >= 5 ? 'Mangler noe — sjekk markerte felt' : 'Kritiske felt mangler';
+  var bd = document.createElement('div'); bd.className = 'quality-breakdown';
+  var items = [
+    { ok: stats.nMissing === 0, txt: stats.nMissing === 0 ? 'Alle felt fylt' : stats.nMissing + ' felt mangler' },
+    { ok: stats.dupSkus === 0, txt: stats.dupSkus === 0 ? 'Ingen duplikater' : stats.dupSkus + ' dup. SKU' },
+    { ok: stats.completeness >= 90, txt: stats.completeness + '% komplett' },
+  ];
+  items.forEach(function(it) {
+    var s = document.createElement('span'); s.className = 'qb-item ' + (it.ok ? 'ok' : 'fail');
+    s.textContent = (it.ok ? '✓ ' : '✗ ') + it.txt;
+    bd.appendChild(s);
+  });
+  wrap.appendChild(sc); wrap.appendChild(lbl); wrap.appendChild(bd);
+  return wrap;
+}
+
+// ── SOURCE EXTRACTION ──
+function extractSources(text) {
+  var sources = [];
+  var urlRe = /https?:\/\/[^\s)>\]"]+/g, m;
+  while ((m = urlRe.exec(text)) !== null) {
+    var url = m[0].replace(/[.,;]+$/, '');
+    if (sources.indexOf(url) === -1 && sources.length < 5) sources.push(url);
+  }
+  if (sources.length === 0) return null;
+  var wrap = document.createElement('div'); wrap.className = 'sources-wrap';
+  var lbl = document.createElement('strong'); lbl.textContent = 'Kilder brukt:';
+  wrap.appendChild(lbl);
+  sources.forEach(function(url) {
+    var a = document.createElement('a'); a.href = url; a.target = '_blank'; a.textContent = url;
+    var br = document.createElement('br');
+    wrap.appendChild(a); wrap.appendChild(br);
+  });
+  return wrap;
+}
+
+// ── ALERT BANNER ──
 function showAlert(type, html) {
   var b = document.getElementById('alert-banner');
   document.getElementById('alert-body').innerHTML = html;
   document.getElementById('alert-icon').textContent = type === 'danger' ? '🚨' : type === 'info' ? 'ℹ️' : '⚠️';
   b.className = 'alert-banner ' + type;
 }
+function closeAlert() { document.getElementById('alert-banner').className = 'alert-banner'; }
 
-function closeAlert() {
-  document.getElementById('alert-banner').className = 'alert-banner';
-}
-
+// ── PROGRESS ──
 function startProgress(label) {
   var wrap = document.getElementById('prog-wrap');
   var fill = document.getElementById('prog-fill');
   document.getElementById('prog-lbl').textContent = label || 'Behandler...';
-  wrap.classList.add('active');
-  fill.style.width = '0%';
-  var p = 0;
-  clearInterval(progTimer);
-  progTimer = setInterval(function() {
-    p = p < 30 ? p + 2 : p < 60 ? p + 0.8 : p < 85 ? p + 0.3 : p;
-    fill.style.width = p + '%';
-  }, 300);
+  wrap.classList.add('active'); fill.style.width = '0%';
+  var p = 0; clearInterval(progTimer);
+  progTimer = setInterval(function() { p = p < 30 ? p + 2 : p < 60 ? p + 0.8 : p < 85 ? p + 0.3 : p; fill.style.width = p + '%'; }, 300);
 }
-
 function stopProgress() {
   clearInterval(progTimer);
-  var fill = document.getElementById('prog-fill');
-  fill.style.width = '100%';
-  setTimeout(function() {
-    document.getElementById('prog-wrap').classList.remove('active');
-    fill.style.width = '0%';
-  }, 600);
+  var fill = document.getElementById('prog-fill'); fill.style.width = '100%';
+  setTimeout(function() { document.getElementById('prog-wrap').classList.remove('active'); fill.style.width = '0%'; }, 600);
 }
 
-function addDownload(csv, label) {
+// ── DOWNLOAD HISTORY ──
+function addDownload(csv, label, missingCount) {
   var now = new Date();
-  var hh = now.getHours().toString().padStart(2, '0');
-  var mm = now.getMinutes().toString().padStart(2, '0');
+  var hh = now.getHours().toString().padStart(2, '0'), mm2 = now.getMinutes().toString().padStart(2, '0');
   var fname = 'novooi-' + now.toISOString().slice(0, 10) + '-' + now.getTime().toString().slice(-4) + '.csv';
-  var entry = { csv: csv, fname: fname, label: label || fname, time: hh + ':' + mm };
+  var entry = { csv: csv, fname: fname, label: label || fname, time: hh + ':' + mm2, missing: missingCount || 0 };
   dlHistory.unshift(entry);
   if (dlHistory.length > 5) dlHistory.pop();
-  renderDlList();
-  return entry;
+  renderDlList(); return entry;
 }
-
 function renderDlList() {
   var list = document.getElementById('dl-list');
-  var empty = document.getElementById('dl-empty');
-  if (dlHistory.length === 0) { if (empty) empty.style.display = ''; return; }
-  if (empty) empty.style.display = 'none';
-  list.innerHTML = '<div class="dl-empty" style="display:none"></div>';
+  if (dlHistory.length === 0) { list.innerHTML = '<div class="dl-empty" id="dl-empty">Ingen filer ennå</div>'; return; }
+  list.innerHTML = '';
   dlHistory.forEach(function(e) {
-    var a = document.createElement('a');
-    a.className = 'dl-item'; a.href = '#';
-    a.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v5M2.5 4l2.5 2.5L7.5 4M1 8v1.5h8V8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="dl-item-name">' + e.label + '</span><span class="dl-item-time">' + e.time + '</span>';
-    a.onclick = (function(entry) { return function(ev) { ev.preventDefault(); triggerDownload(entry.csv, entry.fname); }; })(e);
+    var a = document.createElement('a'); a.className = 'dl-item'; a.href = '#';
+    var badge = e.missing > 0 ? '<span class="dl-item-badge">' + e.missing + ' mangler</span>' : '<span class="dl-item-badge ok">OK</span>';
+    a.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v5M2.5 4l2.5 2.5L7.5 4M1 8v1.5h8V8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="dl-item-name">' + e.label + '</span>' + badge + '<span class="dl-item-time">' + e.time + '</span>';
+    a.onclick = (function(ev2) { return function(ev) { ev.preventDefault(); triggerDownload(ev2.csv, ev2.fname); }; })(e);
     list.appendChild(a);
   });
 }
-
 function triggerDownload(csv, fname) {
   var a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
-  a.download = fname;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  a.download = fname; document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
+// ── SESSION ──
 function saveSession() {
   if (hist.length === 0) { showAlert('warn', 'Ingen samtale å lagre ennå.'); return; }
   var data = JSON.stringify({ hist: hist, dlHistory: dlHistory, changeLog: changeLog, turnCount: turnCount, savedAt: new Date().toISOString() });
@@ -429,9 +628,7 @@ function saveSession() {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   showAlert('info', 'Økt lagret!');
 }
-
 function loadSessionClick() { document.getElementById('session-fi').click(); }
-
 function loadSessionFile(e) {
   var f = e.target.files[0]; if (!f) return;
   var r = new FileReader();
@@ -441,46 +638,29 @@ function loadSessionFile(e) {
       hist = data.hist || []; dlHistory = data.dlHistory || [];
       changeLog = data.changeLog || []; turnCount = data.turnCount || 0;
       renderDlList(); updateTokenMeter();
-      showAlert('info', 'Økt lastet inn. ' + hist.length + ' meldinger.');
-      hw();
+      showAlert('info', 'Økt lastet inn. ' + hist.length + ' meldinger.'); hw();
     } catch(err) { showAlert('danger', 'Ugyldig fil.'); }
   };
   r.readAsText(f); e.target.value = '';
 }
 
-var dz = document.getElementById('dz');
-var fi = document.getElementById('fi');
+// ── FILE UPLOAD ──
+var dz = document.getElementById('dz'), fi = document.getElementById('fi');
 dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('over'); });
 dz.addEventListener('dragleave', function() { dz.classList.remove('over'); });
-dz.addEventListener('drop', function(e) {
-  e.preventDefault(); dz.classList.remove('over');
-  if (e.dataTransfer.files[0]) pf(e.dataTransfer.files[0]);
-});
+dz.addEventListener('drop', function(e) { e.preventDefault(); dz.classList.remove('over'); if (e.dataTransfer.files[0]) pf(e.dataTransfer.files[0]); });
 fi.addEventListener('change', function(e) { if (e.target.files[0]) pf(e.target.files[0]); });
 document.getElementById('uclr').addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); rf(); });
-
 function pf(f) {
   document.getElementById('ufn').textContent = f.name; dz.classList.add('has-file');
   var r = new FileReader();
-  if (f.type === 'application/pdf') {
-    r.readAsDataURL(f);
-    r.onload = function() { upFile = { type: 'pdf', data: r.result.split(',')[1], name: f.name }; };
-  } else {
-    r.readAsText(f);
-    r.onload = function() { upFile = { type: 'text', data: r.result, name: f.name }; };
-  }
+  if (f.type === 'application/pdf') { r.readAsDataURL(f); r.onload = function() { upFile = { type: 'pdf', data: r.result.split(',')[1], name: f.name }; }; }
+  else { r.readAsText(f); r.onload = function() { upFile = { type: 'text', data: r.result, name: f.name }; }; }
 }
+function rf() { upFile = null; fi.value = ''; document.getElementById('ufn').textContent = '—'; dz.classList.remove('has-file'); }
 
-function rf() {
-  upFile = null; fi.value = '';
-  document.getElementById('ufn').textContent = '—'; dz.classList.remove('has-file');
-}
-
-function fmtT(s) {
-  if (s < 60) return Math.round(s) + ' sek';
-  var m = Math.floor(s / 60), rest = Math.round(s % 60);
-  return rest > 0 ? m + ' min ' + rest + ' sek' : m + ' min';
-}
+// ── TIMER ──
+function fmtT(s) { if (s < 60) return Math.round(s) + ' sek'; var mm = Math.floor(s / 60), rest = Math.round(s % 60); return rest > 0 ? mm + ' min ' + rest + ' sek' : mm + ' min'; }
 function startTmr(id) { t0 = Date.now(); tmr = setInterval(function() { var el = document.getElementById(id); if (el) el.textContent = fmtT((Date.now() - t0) / 1000); }, 300); }
 function stopTmr() { clearInterval(tmr); return fmtT((Date.now() - t0) / 1000); }
 
@@ -496,50 +676,73 @@ function estTime(text, hasFile) {
   if (t.indexOf('/export') === 0 || t.indexOf('generer csv') !== -1) return hasFile ? '~2-4 min' : '~1-2 min';
   if (hasFile) return '~1-3 min';
   if (t.indexOf('http') !== -1 || t.indexOf('www.') !== -1) return '~45 sek';
-  if (w < 6) return '~10 sek'; if (w < 15) return '~20 sek';
-  return '~30 sek';
+  if (w < 6) return '~10 sek'; if (w < 15) return '~20 sek'; return '~30 sek';
 }
 
+// ── HELPERS ──
 function ic(c) { var i = document.getElementById('ci'); i.value = c; i.focus(); ar(i); }
 function sp(c) { var i = document.getElementById('ci'); i.value = c; i.focus(); ar(i); }
 function ar(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 140) + 'px'; }
 function hk(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }
 function hw() { var w = document.getElementById('wlc'); if (w) w.remove(); }
-
 function nysamtale() {
   if (hist.length > 0 && !confirm('Start ny samtale? Historikken tømmes.')) return;
   hist = []; upFile = null; dlHistory = []; changeLog = []; turnCount = 0;
-  rf(); closeAlert(); renderDlList(); updateTokenMeter(); location.reload();
+  rf(); closeAlert(); renderDlList(); updateTokenMeter();
+  document.getElementById('stats-bar').classList.remove('active');
+  document.getElementById('comp-wrap').classList.remove('active');
+  location.reload();
 }
 
+// ── CSV TABLE ──
 function buildCsvTable(csvText) {
   var lines = csvText.trim().split('\n');
   if (lines.length < 2) return null;
   var headers = lines[0].split(';');
   var rows = lines.slice(1).map(function(l) { return l.split(';'); });
-  var showCols = ['Type','Name','SKU','Parent','Regular price','Short description for SEO ','Weight (kg)','Length (cm)','Width (cm)','Height (cm)','Meta: _estimated_shipping_text','Meta: _logistra_robots_product_commodity_code','Attribute 1 name','Attribute 1 value(s)','Attribute 2 name','Attribute 2 value(s)'];
+  var showCols = ['Type','Name','SKU','Parent','Regular price','Meta: _logistra_robots_product_commodity_code','Meta: _estimated_shipping_text','Meta: _logistra_robots_product_freight_description','Weight (kg)','Length (cm)','Width (cm)','Height (cm)','Attribute 1 name','Attribute 1 value(s)','Attribute 2 name','Attribute 2 value(s)','Short description for SEO '];
   var colIdx = [];
-  showCols.forEach(function(c) {
-    var idx = headers.findIndex(function(h) { return h.trim() === c.trim(); });
-    if (idx >= 0) colIdx.push(idx);
-  });
+  showCols.forEach(function(c) { var idx = headers.findIndex(function(h) { return h.trim() === c.trim(); }); if (idx >= 0) colIdx.push(idx); });
   var visH = colIdx.map(function(i) { return headers[i]; });
+  var typeColIdx = headers.findIndex(function(h) { return h.trim() === 'Type'; });
+  var skuColIdx = headers.findIndex(function(h) { return h.trim() === 'SKU'; });
+
+  // Find duplicate SKUs
+  var skuCount = {};
+  rows.forEach(function(row) { var s = (row[skuColIdx] || '').trim(); if (s) skuCount[s] = (skuCount[s] || 0) + 1; });
+
   var wrap = document.createElement('div'); wrap.className = 'csv-table-wrap';
   var tbl = document.createElement('table'); tbl.className = 'csv-table';
   var thead = document.createElement('thead'); var hrow = document.createElement('tr');
-  visH.forEach(function(h) { var th = document.createElement('th'); th.textContent = h.trim(); hrow.appendChild(th); });
+  visH.forEach(function(h) {
+    var th = document.createElement('th');
+    var shortName = h.trim().replace('Meta: _logistra_robots_product_', '').replace('Meta: _', '');
+    th.textContent = shortName;
+    var tip = COL_TIPS[h.trim()];
+    if (tip) th.setAttribute('data-tip', tip);
+    hrow.appendChild(th);
+  });
   thead.appendChild(hrow); tbl.appendChild(thead);
   var tbody = document.createElement('tbody');
-  var typeColIdx = headers.findIndex(function(h) { return h === 'Type'; });
   rows.forEach(function(row, ri) {
     var tr = document.createElement('tr');
     var typeVal = (row[typeColIdx] || '').trim();
+    tr.className = typeVal ? 'row-' + typeVal : '';
+    var sku = (row[skuColIdx] || '').trim();
+    if (sku && skuCount[sku] > 1) tr.classList.add('row-dup');
+
     colIdx.forEach(function(ci, vi) {
       var td = document.createElement('td');
       var val = (row[ci] || '').trim();
       td.textContent = val; td.title = val;
       if (vi === 0) { td.className = typeVal === 'variable' ? 'tv' : typeVal === 'variation' ? 'tvar' : ''; }
-      if (!val && visH[vi] && visH[vi].toLowerCase().indexOf('price') !== -1) td.className = 'miss';
+      var colName = (visH[vi] || '').toLowerCase();
+      if (!val && colName.indexOf('price') !== -1) td.className = 'miss';
+      if (!val && colName.indexOf('commodity') !== -1) { td.className = 'miss'; td.textContent = '⚠ MANGLER'; td.style.fontWeight = '500'; }
+      var badAttrs = ['produsent','designer','brand','merkevare','manufacturer'];
+      if (colName.indexOf('attribute') !== -1 && colName.indexOf('name') !== -1 && val && badAttrs.some(function(b) { return val.toLowerCase().indexOf(b) !== -1; })) {
+        td.style.background = 'rgba(176,125,58,0.15)'; td.title = 'OBS: Produsent/Designer skal ikke være attributt — bruk Tags i stedet';
+      }
       td.contentEditable = 'true';
       td.addEventListener('blur', (function(r2, c2) { return function() { if (rows[r2]) rows[r2][c2] = td.textContent; }; })(ri, ci));
       tr.appendChild(td);
@@ -547,30 +750,35 @@ function buildCsvTable(csvText) {
     tbody.appendChild(tr);
   });
   tbl.appendChild(tbody); wrap.appendChild(tbl);
-  var dlBtn = document.createElement('button'); dlBtn.className = 'dl-btn sec'; dlBtn.textContent = '↓ Last ned redigert';
+  var dlBtn = document.createElement('button'); dlBtn.className = 'dl-btn sec'; dlBtn.style.marginTop = '.5rem'; dlBtn.textContent = '↓ Last ned redigert';
   dlBtn.onclick = function() {
     var csv = [headers].concat(rows).map(function(r) { return r.join(';'); }).join('\n');
-    var e2 = addDownload(csv, 'redigert'); triggerDownload(csv, e2.fname);
+    var e2 = addDownload(csv, 'redigert', 0); triggerDownload(csv, e2.fname);
   };
   wrap.appendChild(dlBtn);
   return { wrap: wrap, headers: headers, rows: rows };
 }
 
+// ── FORMAT ──
 function fmt(t) {
   var h = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   h = h.replace(/`([^`\n]+)`/g, '<code>$1</code>');
   h = h.replace(/```(?:csv)?\n?([\s\S]+?)```/g, '<pre>$1</pre>');
-  h = h.replace(/\n/g, '<br/>');
-  return h;
+  h = h.replace(/\n/g, '<br/>'); return h;
 }
 
+// ── WARNINGS ──
 function detectWarnings(text) {
-  var re = /MANGLER[^\n<]{0,120}/gi, m, found = [];
-  while ((m = re.exec(text)) !== null) found.push(m[0]);
-  if (found.length > 0) showAlert('warn', '<strong>Manglende felt:</strong> ' + found.slice(0, 3).join(' · '));
+  var criticals = [], warnings = [];
+  if (/commodity.code.*tom|HS-kode.*mangler|MANGLER.*HS|MANGLER.*tariff|MANGLER.*commodity/i.test(text)) criticals.push('HS-tolltariffkode mangler — obligatorisk felt');
+  var re = /MANGLER[^\n<]{0,100}/gi, m;
+  while ((m = re.exec(text)) !== null) { var w = m[0].replace(/^MANGLER[:\s]*/i, '').trim(); if (w.length > 2) warnings.push(w); }
+  if (criticals.length > 0) showAlert('danger', '<strong>Kritisk:</strong> ' + criticals.join(' — ') + (warnings.length > 0 ? '<br><span style="opacity:.8">Mangler: ' + warnings.slice(0,3).join(' · ') + '</span>' : ''));
+  else if (warnings.length > 0) showAlert('warn', '<strong>Manglende felt:</strong> ' + warnings.slice(0, 4).join(' · '));
   else closeAlert();
 }
 
+// ── ADD MESSAGE ──
 function addMsg(role, text) {
   hw();
   var c = document.getElementById('msgs');
@@ -580,14 +788,9 @@ function addMsg(role, text) {
   var col = document.createElement('div'); col.className = 'mcol';
   var b = document.createElement('div'); b.className = 'bbl'; b.innerHTML = fmt(text);
   col.appendChild(b); w.appendChild(av); w.appendChild(col); c.appendChild(w);
-  c.scrollTop = c.scrollHeight;
-  return { b: b, col: col };
+  c.scrollTop = c.scrollHeight; return { b: b, col: col };
 }
-
-function addMeta(col, txt) {
-  var m = document.createElement('div'); m.className = 'mmeta'; m.textContent = txt; col.appendChild(m);
-}
-
+function addMeta(col, txt) { var m = document.createElement('div'); m.className = 'mmeta'; m.textContent = txt; col.appendChild(m); }
 function showTyping(est) {
   hw();
   var c = document.getElementById('msgs');
@@ -599,16 +802,23 @@ function showTyping(est) {
   col.appendChild(b); w.appendChild(av); w.appendChild(col); c.appendChild(w);
   c.scrollTop = c.scrollHeight; startTmr('ltmr');
 }
-
 function rmTyping() { var s = stopTmr(); var t = document.getElementById('typ'); if (t) t.remove(); return s; }
 
+// ── CSV OFFER ──
 function offerCSV(text, col) {
   var m = text.match(/```(?:csv)?\n?(ID;Type;[\s\S]+?)```/i);
   if (!m) return;
   var csvText = m[1].trim();
-  var b = col.querySelector('.bbl');
-  if (!b) return;
+  var b = col.querySelector('.bbl'); if (!b) return;
   var pre = b.querySelector('pre');
+
+  // Stats + completeness
+  var stats = updateStats(csvText);
+
+  // Quality score widget
+  var qw = buildQualityScore(stats);
+  if (qw) b.insertBefore(qw, pre ? pre : null);
+
   if (pre) {
     var toggle = document.createElement('button'); toggle.className = 'csv-toggle'; toggle.textContent = '▼ Vis rå CSV';
     var shown = false; pre.style.display = 'none';
@@ -617,76 +827,55 @@ function offerCSV(text, col) {
     var tblResult = buildCsvTable(csvText);
     if (tblResult) b.insertBefore(tblResult.wrap, pre);
   }
-  var entry = addDownload(csvText);
+
+  // Sources box
+  var srcWrap = extractSources(text);
+  if (srcWrap) b.appendChild(srcWrap);
+
+  var entry = addDownload(csvText, null, stats ? stats.nMissing : 0);
   var a = document.createElement('a'); a.className = 'dl-btn'; a.href = '#';
-  a.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7M3.5 6l3 3 3-3M1 10v1.5A1 1 0 002 12.5h9a1 1 0 001-1V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Last ned CSV';
+  var badgeHtml = (stats && stats.nMissing > 0) ? '<span class="dl-badge">' + stats.nMissing + '</span>' : '';
+  a.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7M3.5 6l3 3 3-3M1 10v1.5A1 1 0 002 12.5h9a1 1 0 001-1V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Last ned CSV' + badgeHtml;
   a.onclick = (function(e2) { return function(ev) { ev.preventDefault(); triggerDownload(e2.csv, e2.fname); }; })(entry);
   b.appendChild(a);
   detectWarnings(text);
 }
 
+// ── SEND ──
 async function send() {
   var inp = document.getElementById('ci');
-  var text = inp.value.trim();
-  if (!text) return;
+  var text = inp.value.trim(); if (!text) return;
   inp.value = ''; ar(inp);
-  document.getElementById('sb').disabled = true;
-  turnCount++;
+  document.getElementById('sb').disabled = true; turnCount++;
   addMsg('user', text);
-
   var content;
   if (upFile) {
-    if (upFile.type === 'pdf') {
-      content = [
-        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: upFile.data } },
-        { type: 'text', text: text + '\n\n[Fil: ' + upFile.name + ']' }
-      ];
-    } else {
-      content = [{ type: 'text', text: text + '\n\n--- Innhold fra ' + upFile.name + ' ---\n' + upFile.data }];
-    }
-    changeLog.push({ turn: turnCount, action: 'Fil: ' + upFile.name });
-    upFile = null; rf();
-  } else {
-    content = text;
-  }
-
+    if (upFile.type === 'pdf') content = [{ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: upFile.data } }, { type: 'text', text: text + '\n\n[Fil: ' + upFile.name + ']' }];
+    else content = [{ type: 'text', text: text + '\n\n--- Innhold fra ' + upFile.name + ' ---\n' + upFile.data }];
+    changeLog.push({ turn: turnCount, action: 'Fil: ' + upFile.name }); upFile = null; rf();
+  } else { content = text; }
   if (text.charAt(0) === '/') changeLog.push({ turn: turnCount, action: 'Kommando: ' + text.split(' ')[0] });
   hist.push({ role: 'user', content: content });
-
   var est = estTime(text, Array.isArray(content));
   showTyping(est);
   startProgress(text.indexOf('/fill-missing') === 0 ? 'Søker etter manglende data...' : text.indexOf('/export') === 0 ? 'Genererer CSV...' : 'Behandler...');
-
   try {
-    var res = await fetch(WU, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8000, system: SP, messages: hist })
-    });
+    var res = await fetch(WU, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8000, system: SP, messages: hist }) });
     var data = await res.json();
     var elapsed = rmTyping(); stopProgress();
-
     if (data.error) {
       var errMsg = 'API-feil: ' + data.error.message;
-      if (data.error.message && data.error.message.indexOf('prompt is too long') !== -1) {
-        errMsg = 'Meldingen er for lang. Del prislisten i mindre batcher (10-20 produkter). Historikken er tømt — last opp på nytt.';
-        hist = []; rf(); showAlert('danger', 'Kontekstgrense nådd — historikk tømt automatisk.');
-      }
-      addMsg('assistant', '⚠️ ' + errMsg);
-      document.getElementById('sb').disabled = false; return;
+      if (data.error.message && data.error.message.indexOf('prompt is too long') !== -1) { errMsg = 'Meldingen er for lang. Del prislisten i batcher (10-20 produkter). Historikken er tømt.'; hist = []; rf(); showAlert('danger', 'Kontekstgrense nådd — historikk tømt automatisk.'); }
+      addMsg('assistant', '⚠️ ' + errMsg); document.getElementById('sb').disabled = false; return;
     }
-
     var fullText = (data.content || []).filter(function(b) { return b.type === 'text'; }).map(function(b) { return b.text; }).join('\n');
     hist.push({ role: 'assistant', content: data.content });
     compressPdfInHistory(); trimHistory(); updateTokenMeter();
-
     var result = addMsg('assistant', fullText);
     var histKb = Math.round(histSize() / 1024);
-    var usageStr = data.usage ? ' · ' + data.usage.output_tokens + ' tokens · ~' + histKb + 'k tegn' : '';
-    addMeta(result.col, 'Svartid: ' + elapsed + usageStr);
+    addMeta(result.col, 'Svartid: ' + elapsed + (data.usage ? ' · ' + data.usage.output_tokens + ' tokens · ~' + histKb + 'k tegn' : ''));
     offerCSV(fullText, result.col);
     if (fullText.indexOf('ID;Type;') !== -1) changeLog.push({ turn: turnCount, action: 'CSV generert' });
-
   } catch(err) {
     rmTyping(); stopProgress();
     addMsg('assistant', '⚠️ Feil: ' + err.message);
